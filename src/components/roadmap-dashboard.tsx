@@ -40,6 +40,8 @@ interface ProgressData {
   expandedModules: string[];
 }
 
+const emptyProgress: ProgressData = { completedTopics: [], expandedModules: [] };
+
 function subscribeToStorage(callback: () => void) {
   window.addEventListener("storage", callback);
   return () => window.removeEventListener("storage", callback);
@@ -48,14 +50,14 @@ function subscribeToStorage(callback: () => void) {
 function getStoredProgress(): ProgressData {
   try {
     const stored = localStorage.getItem("roadmap-progress");
-    return stored ? JSON.parse(stored) : { completedTopics: [], expandedModules: [] };
+    return stored ? JSON.parse(stored) : emptyProgress;
   } catch {
-    return { completedTopics: [], expandedModules: [] };
+    return emptyProgress;
   }
 }
 
 function getServerProgress(): ProgressData {
-  return { completedTopics: [], expandedModules: [] };
+  return emptyProgress;
 }
 
 export default function RoadmapDashboard() {
