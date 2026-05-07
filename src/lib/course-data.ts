@@ -222,7 +222,7 @@ export const courseModules: Module[] = [
     id: "dsa",
     number: 12,
     title: "Data Structures & Algorithms",
-    icon: "BinaryTree",
+    icon: "GitBranch",
     color: "text-fuchsia-400",
     glowColor: "shadow-fuchsia-500/20",
     bgAccent: "bg-fuchsia-500/10",

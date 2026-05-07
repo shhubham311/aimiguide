@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
-  Wrench, Cloud, ThumbsUp, MessageSquareCode, BinaryTree,
+  Wrench, Cloud, ThumbsUp, MessageSquareCode, GitBranch,
   Search, ChevronDown, ChevronRight, Copy, Check, Terminal,
   BookOpen, Zap, Trophy, Filter, X, GraduationCap, ArrowRight,
   LayoutGrid, List, Command as CmdIcon
@@ -20,7 +20,7 @@ import { courseModules, generateCommand, type Module, type Topic } from "@/lib/c
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
-  Wrench, Cloud, ThumbsUp, MessageSquareCode, BinaryTree,
+  Wrench, Cloud, ThumbsUp, MessageSquareCode, GitBranch,
 };
 
 const depthColors = {
@@ -155,8 +155,6 @@ export default function RoadmapDashboard() {
       })
       .filter((mod) => mod.topics.length > 0);
   }, [searchQuery, depthFilter]);
-
-  const totalTopics = courseModules.reduce((sum, m) => sum + m.topics.length, 0);
 
   return (
     <TooltipProvider delayDuration={200}>
