@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
@@ -16,7 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { courseModules, generateCommand, type Module, type Topic } from "@/lib/course-data";
+import { courseModules, generateCommand, generateTeachingPrompt, type Module, type Topic } from "@/lib/course-data";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
@@ -40,8 +40,12 @@ interface ProgressData {
   expandedModules: string[];
 }
 
-function getProgress(): ProgressData {
-  if (typeof window === "undefined") return { completedTopics: [], expandedModules: [] };
+function subscribeToStorage(callback: () => void) {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+}
+
+function getStoredProgress(): ProgressData {
   try {
     const stored = localStorage.getItem("roadmap-progress");
     return stored ? JSON.parse(stored) : { completedTopics: [], expandedModules: [] };
@@ -50,92 +54,102 @@ function getProgress(): ProgressData {
   }
 }
 
-function saveProgress(data: ProgressData) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("roadmap-progress", JSON.stringify(data));
+function getServerProgress(): ProgressData {
+  return { completedTopics: [], expandedModules: [] };
 }
 
 export default function RoadmapDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
-    const progress = getProgress();
-    return new Set(progress.expandedModules);
-  });
-  const [completedTopics, setCompletedTopics] = useState<Set<string>>(() => {
-    if (typeof window === "undefined") return new Set();
-    const progress = getProgress();
-    return new Set(progress.completedTopics);
-  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [depthFilter, setDepthFilter] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
-  const [isClientRef] = useState(() => {
-    if (typeof window !== "undefined") return true;
-    return false;
-  });
 
-  // Persist progress to localStorage
-  const persistProgress = useCallback(() => {
-    saveProgress({
-      completedTopics: Array.from(completedTopics),
-      expandedModules: Array.from(expandedModules),
-    });
-  }, [completedTopics, expandedModules]);
+  // Read from localStorage using useSyncExternalStore (no hydration mismatch)
+  const storedProgress = useSyncExternalStore(
+    subscribeToStorage,
+    getStoredProgress,
+    getServerProgress
+  );
 
-  useEffect(() => {
-    if (isClientRef) persistProgress();
-  }, [isClientRef, persistProgress]);
+  const completedTopics = useMemo(
+    () => new Set(storedProgress.completedTopics),
+    [storedProgress.completedTopics]
+  );
+  const expandedModules = useMemo(
+    () => new Set(storedProgress.expandedModules),
+    [storedProgress.expandedModules]
+  );
+
+  // Trigger a storage event to re-read from localStorage after any write
+  const writeProgress = useCallback((data: ProgressData) => {
+    try {
+      localStorage.setItem("roadmap-progress", JSON.stringify(data));
+      // Dispatch a storage event so useSyncExternalStore re-reads
+      window.dispatchEvent(new StorageEvent("storage"));
+    } catch {
+      // localStorage not available
+    }
+  }, []);
 
   const totalTopics = courseModules.reduce((sum, m) => sum + m.topics.length, 0);
   const totalProgress = totalTopics > 0 ? Math.round((completedTopics.size / totalTopics) * 100) : 0;
 
   const toggleModule = useCallback((moduleId: string) => {
-    setExpandedModules((prev) => {
-      const next = new Set(prev);
-      if (next.has(moduleId)) {
-        next.delete(moduleId);
-        setSelectedModule(null);
-      } else {
-        next.add(moduleId);
-        setSelectedModule(moduleId);
-      }
-      return next;
+    const current = storedProgress.expandedModules;
+    const next = current.includes(moduleId)
+      ? current.filter((id) => id !== moduleId)
+      : [...current, moduleId];
+    writeProgress({
+      ...storedProgress,
+      expandedModules: next,
     });
-  }, []);
+    if (!current.includes(moduleId)) {
+      setSelectedModule(moduleId);
+    } else {
+      setSelectedModule(null);
+    }
+  }, [storedProgress, writeProgress]);
 
   const toggleComplete = useCallback((topicKey: string) => {
-    setCompletedTopics((prev) => {
-      const next = new Set(prev);
-      if (next.has(topicKey)) {
-        next.delete(topicKey);
-      } else {
-        next.add(topicKey);
-      }
-      return next;
+    const current = storedProgress.completedTopics;
+    const next = current.includes(topicKey)
+      ? current.filter((id) => id !== topicKey)
+      : [...current, topicKey];
+    writeProgress({
+      ...storedProgress,
+      completedTopics: next,
     });
-  }, []);
+  }, [storedProgress, writeProgress]);
 
   const sendCommand = useCallback((moduleId: string, topicId: string, topicTitle: string) => {
+    // Find the module and topic to get full context
+    const mod = courseModules.find((m) => m.id === moduleId);
+    const topic = mod?.topics.find((t) => t.id === topicId);
     const cmd = generateCommand(moduleId, topicId);
-    const fullCommand = `${cmd} — ${topicTitle}`;
+    const moduleTitle = mod?.title || "Unknown";
+    const topicDescription = topic?.description || "";
 
-    // Try to send message to parent chat window (IM embedding)
+    const teachingPrompt = generateTeachingPrompt(
+      moduleId, topicId, topicTitle, moduleTitle, topicDescription
+    );
+    const fullMessage = `${cmd}\n\n${teachingPrompt}`;
+
+    // Send to parent chat window
     try {
       window.parent.postMessage(
-        { type: "chat-send", text: fullCommand },
+        { type: "chat-send", text: fullMessage },
         "*"
       );
     } catch {
-      // Silently fail if parent postMessage is blocked
+      // Silently fail if blocked
     }
 
     // Also copy to clipboard as fallback
     try {
-      navigator.clipboard.writeText(fullCommand).catch(() => {
+      navigator.clipboard.writeText(fullMessage).catch(() => {
         const textArea = document.createElement("textarea");
-        textArea.value = fullCommand;
+        textArea.value = fullMessage;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand("copy");

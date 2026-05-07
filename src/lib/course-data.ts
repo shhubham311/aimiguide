@@ -239,6 +239,24 @@ export function generateCommand(moduleId: string, topicId: string): string {
   return `/learn ${moduleId}.${topicId}`;
 }
 
+export function generateTeachingPrompt(moduleId: string, topicId: string, topicTitle: string, moduleTitle: string, topicDescription: string): string {
+  return `Teach me "${topicTitle}" (from Module: ${moduleTitle}).
+
+${topicDescription}
+
+Instructions for teaching:
+- I am a beginner to this specific topic. Start from absolute basics and build up progressively.
+- Cover the WHY first (why this concept matters in real-world AI/ML), then the WHAT, then the HOW.
+- Include mathematical foundations with clear formulas and explain each variable/symbol.
+- Provide practical Python code implementations using real-world datasets (e.g., from sklearn, Kaggle, UCI repository).
+- Use visuals and diagrams where possible — describe them in text or use ASCII/text-based representations.
+- After each major concept, give me a quick exercise or thought question to test understanding.
+- Connect this topic to the bigger picture — how it relates to other AI/ML concepts.
+- Make it interactive: ask me questions, guide me through thinking, don't just dump information.
+- Be thorough and exhaustive — share every piece of knowledge you have on this topic.
+- Teaching style: conversational, patient, encouraging, like a mentor sitting next to me.`;
+}
+
 export function getAllTopicIds(): string[] {
   const ids: string[] = [];
   courseModules.forEach((mod) => {
