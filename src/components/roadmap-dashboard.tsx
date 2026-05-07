@@ -42,6 +42,9 @@ interface ProgressData {
 
 const emptyProgress: ProgressData = { completedTopics: [], expandedModules: [] };
 
+let cachedRaw: string | null = null;
+let cachedProgress: ProgressData = emptyProgress;
+
 function subscribeToStorage(callback: () => void) {
   window.addEventListener("storage", callback);
   return () => window.removeEventListener("storage", callback);
@@ -49,9 +52,14 @@ function subscribeToStorage(callback: () => void) {
 
 function getStoredProgress(): ProgressData {
   try {
-    const stored = localStorage.getItem("roadmap-progress");
-    return stored ? JSON.parse(stored) : emptyProgress;
+    const raw = localStorage.getItem("roadmap-progress");
+    if (raw === cachedRaw) return cachedProgress;
+    cachedRaw = raw;
+    cachedProgress = raw ? JSON.parse(raw) : emptyProgress;
+    return cachedProgress;
   } catch {
+    cachedRaw = null;
+    cachedProgress = emptyProgress;
     return emptyProgress;
   }
 }
