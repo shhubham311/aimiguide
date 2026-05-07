@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { courseModules, generateCommand, generateTeachingPrompt, type Module, type Topic } from "@/lib/course-data";
+import LessonViewer from "@/components/lesson-viewer";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
@@ -74,6 +75,19 @@ export default function RoadmapDashboard() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [depthFilter, setDepthFilter] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
+
+  // Lesson viewer state
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerTopic, setViewerTopic] = useState<{ id: string; title: string } | null>(null);
+
+  const openViewer = useCallback((topicId: string, topicTitle: string) => {
+    setViewerTopic({ id: topicId, title: topicTitle });
+    setViewerOpen(true);
+  }, []);
+
+  const closeViewer = useCallback(() => {
+    setViewerOpen(false);
+  }, []);
 
   // Read from localStorage using useSyncExternalStore (no hydration mismatch)
   const storedProgress = useSyncExternalStore(
@@ -421,6 +435,7 @@ export default function RoadmapDashboard() {
                 onToggle={() => toggleModule(mod.id)}
                 onComplete={(topicKey) => toggleComplete(topicKey)}
                 onCopy={(modId, topicId, title) => sendCommand(modId, topicId, title)}
+                onOpenViewer={(topicId, topicTitle) => openViewer(topicId, topicTitle)}
               />
             ))}
           </div>
@@ -479,6 +494,16 @@ export default function RoadmapDashboard() {
           </motion.div>
         </div>
       </div>
+
+      {/* Lesson Viewer Overlay */}
+      {viewerTopic && (
+        <LessonViewer
+          topicId={viewerTopic.id}
+          topicTitle={viewerTopic.title}
+          isOpen={viewerOpen}
+          onClose={closeViewer}
+        />
+      )}
     </TooltipProvider>
   );
 }
@@ -495,6 +520,7 @@ interface ModuleCardProps {
   onToggle: () => void;
   onComplete: (topicKey: string) => void;
   onCopy: (moduleId: string, topicId: string, title: string) => void;
+  onOpenViewer: (topicId: string, topicTitle: string) => void;
 }
 
 function ModuleCard({
@@ -507,6 +533,7 @@ function ModuleCard({
   onToggle,
   onComplete,
   onCopy,
+  onOpenViewer,
 }: ModuleCardProps) {
   const Icon = iconMap[mod.icon] || Code2;
   const modCompleted = mod.topics.filter((t) => completedTopics.has(`${mod.id}.${t.id}`)).length;
@@ -602,6 +629,7 @@ function ModuleCard({
                     isCopied={copiedId === `${mod.id}.${topic.id}`}
                     onToggleComplete={() => onComplete(`${mod.id}.${topic.id}`)}
                     onCopy={() => onCopy(mod.id, topic.id, topic.title)}
+                    onOpenViewer={() => onOpenViewer(topic.id, topic.title)}
                   />
                 ))}
               </div>
@@ -623,6 +651,7 @@ interface TopicItemProps {
   isCopied: boolean;
   onToggleComplete: () => void;
   onCopy: () => void;
+  onOpenViewer: () => void;
 }
 
 function TopicItem({
@@ -633,6 +662,7 @@ function TopicItem({
   isCopied,
   onToggleComplete,
   onCopy,
+  onOpenViewer,
 }: TopicItemProps) {
   const [showDesc, setShowDesc] = useState(false);
   const cmd = generateCommand(mod.id, topic.id);
@@ -693,11 +723,27 @@ function TopicItem({
         <Tooltip>
           <TooltipTrigger asChild>
             <button
+              onClick={onOpenViewer}
+              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-all border bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-500/30"
+            >
+              <BookOpen className="w-3 h-3" />
+              <span className="hidden sm:inline">View Lesson</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
+            Read full lesson in browser
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Send Command Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
               onClick={onCopy}
               className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-all border ${
                 isCopied
                   ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 hover:border-emerald-500/30"
+                  : "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-500/30"
               }`}
             >
               {isCopied ? (
