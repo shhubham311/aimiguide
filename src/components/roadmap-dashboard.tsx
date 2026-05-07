@@ -7,7 +7,7 @@ import {
   Wrench, Cloud, ThumbsUp, MessageSquareCode, GitBranch,
   Search, ChevronDown, ChevronRight, Copy, Check, Terminal,
   BookOpen, Zap, Trophy, Filter, X, GraduationCap, ArrowRight, Send,
-  LayoutGrid, List, Command as CmdIcon
+  LayoutGrid, List, Command as CmdIcon, Menu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,6 +75,7 @@ export default function RoadmapDashboard() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [depthFilter, setDepthFilter] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   // Lesson viewer state
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -277,58 +278,58 @@ export default function RoadmapDashboard() {
               backgroundSize: "60px 60px",
             }}
           />
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/3 rounded-full blur-[150px]" />
+          <div className="absolute top-0 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-emerald-500/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-violet-500/5 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-cyan-500/3 rounded-full blur-[150px]" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
           {/* Header */}
           <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-4 sm:mb-8"
           >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                    <Terminal className="w-5 h-5 text-emerald-400" />
+            <div className="flex items-center justify-between gap-3 mb-3 sm:mb-5">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                    <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                   </div>
-                  <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
+                  <div className="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-400 rounded-full animate-pulse" />
                 </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-xl lg:text-2xl font-bold tracking-tight text-white truncate">
                     AI/ML <span className="text-emerald-400">Learning</span> Terminal
                   </h1>
-                  <p className="text-xs text-gray-500">Select a topic to deep dive — teaching happens in this chat</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block truncate">Select a topic to deep dive — teaching happens in this chat</p>
                 </div>
               </div>
 
-              {/* Global Progress */}
-              <div className="flex items-center gap-3 bg-white/5 rounded-lg px-4 py-2.5 border border-white/10 w-full sm:w-auto">
-                <Trophy className="w-4 h-4 text-amber-400 shrink-0" />
-                <div className="flex-1 sm:w-40">
-                  <div className="flex justify-between text-xs mb-1">
+              {/* Global Progress — compact pill on mobile */}
+              <div className="flex items-center gap-2 sm:gap-3 bg-white/5 rounded-lg px-2.5 sm:px-4 py-1.5 sm:py-2.5 border border-white/10 shrink-0">
+                <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+                <div className="hidden sm:block flex-1 w-36 lg:w-40">
+                  <div className="flex justify-between text-[10px] sm:text-xs mb-1">
                     <span className="text-gray-400">Progress</span>
                     <span className="text-emerald-400 font-bold">{completedTopics.size}/{totalTopics}</span>
                   </div>
                   <Progress value={totalProgress} className="h-1.5 bg-white/10" />
                 </div>
-                <span className="text-sm font-bold text-emerald-400 tabular-nums">{totalProgress}%</span>
+                <span className="text-xs sm:text-sm font-bold text-emerald-400 tabular-nums">{totalProgress}%</span>
               </div>
             </div>
 
             {/* Search & Filters Bar */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
+            <div className="flex gap-2 sm:gap-3">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <Input
-                  placeholder="Search topics, modules, concepts..."
+                  placeholder="Search topics, modules..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-10 rounded-lg font-mono text-sm"
+                  className="pl-9 sm:pl-10 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-9 sm:h-10 rounded-lg font-mono text-xs sm:text-sm"
                 />
                 {searchQuery && (
                   <button
@@ -340,14 +341,15 @@ export default function RoadmapDashboard() {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Desktop filters row */}
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
                 {/* Depth Filter */}
                 <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10">
                   {(["all", "beginner", "intermediate", "advanced"] as const).map((d) => (
                     <button
                       key={d}
                       onClick={() => setDepthFilter(d)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      className={`px-2.5 md:px-3 py-1.5 rounded-md text-[10px] md:text-xs font-medium transition-all whitespace-nowrap ${
                         depthFilter === d
                           ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                           : "text-gray-500 hover:text-gray-300"
@@ -374,17 +376,73 @@ export default function RoadmapDashboard() {
                   </button>
                 </div>
               </div>
+
+              {/* Mobile filter toggle */}
+              <button
+                onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+                className="sm:hidden shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
             </div>
+
+            {/* Mobile filters dropdown */}
+            <AnimatePresence>
+              {mobileFiltersOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden sm:hidden"
+                >
+                  <div className="flex items-center gap-2 mt-2 p-2 bg-white/[0.03] rounded-lg border border-white/10">
+                    {/* Depth Filter */}
+                    <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10 overflow-x-auto scrollbar-none flex-1">
+                      {(["all", "beginner", "intermediate", "advanced"] as const).map((d) => (
+                        <button
+                          key={d}
+                          onClick={() => setDepthFilter(d)}
+                          className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition-all whitespace-nowrap ${
+                            depthFilter === d
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : "text-gray-500 hover:text-gray-300"
+                          }`}
+                        >
+                          {d === "all" ? "All" : depthLabels[d]}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* View Toggle */}
+                    <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10 shrink-0">
+                      <button
+                        onClick={() => setViewMode("grid")}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === "grid" ? "bg-white/10 text-white" : "text-gray-500"}`}
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setViewMode("list")}
+                        className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white/10 text-white" : "text-gray-500"}`}
+                      >
+                        <List className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.header>
 
-          {/* Module Stats Bar */}
+          {/* Module Stats Bar — Quick Nav */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-none"
+            className="flex items-center gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2 scrollbar-none -mx-1 px-1"
           >
-            <span className="text-xs text-gray-600 shrink-0">Quick Nav:</span>
+            <span className="text-[10px] sm:text-xs text-gray-600 shrink-0">Quick:</span>
             {courseModules.map((mod) => {
               const Icon = iconMap[mod.icon] || Code2;
               const modCompleted = mod.topics.filter((t) => completedTopics.has(`${mod.id}.${t.id}`)).length;
@@ -399,7 +457,7 @@ export default function RoadmapDashboard() {
                         }
                         document.getElementById(`module-${mod.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs whitespace-nowrap transition-all shrink-0 border ${
+                      className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-xs whitespace-nowrap transition-all shrink-0 border ${
                         selectedModule === mod.id
                           ? `bg-white/10 border-white/20 text-white`
                           : isDone
@@ -408,9 +466,9 @@ export default function RoadmapDashboard() {
                       }`}
                     >
                       <Icon className="w-3 h-3" />
-                      <span className="hidden lg:inline">{mod.number}.</span>
-                      <span className="truncate max-w-[100px]">{mod.title}</span>
-                      {isDone && <Check className="w-3 h-3 text-emerald-400" />}
+                      <span className="hidden md:inline">{mod.number}.</span>
+                      <span className="truncate max-w-[70px] sm:max-w-[100px]">{mod.title}</span>
+                      {isDone && <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />}
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="bg-gray-900 border-gray-700 text-xs">
@@ -422,7 +480,7 @@ export default function RoadmapDashboard() {
           </motion.div>
 
           {/* Modules Grid/List */}
-          <div className={viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2 gap-4" : "flex flex-col gap-3"}>
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4" : "flex flex-col gap-2.5 sm:gap-3"}>
             {filteredModules.map((mod, idx) => (
               <ModuleCard
                 key={mod.id}
@@ -444,11 +502,11 @@ export default function RoadmapDashboard() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 text-gray-600"
+              className="flex flex-col items-center justify-center py-16 sm:py-20 text-gray-600"
             >
-              <Search className="w-12 h-12 mb-4 opacity-30" />
-              <p className="text-lg">No topics found</p>
-              <p className="text-sm mt-1">Try a different search or filter</p>
+              <Search className="w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-30" />
+              <p className="text-base sm:text-lg">No topics found</p>
+              <p className="text-xs sm:text-sm mt-1">Try a different search or filter</p>
             </motion.div>
           )}
 
@@ -457,37 +515,33 @@ export default function RoadmapDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-8 mb-4"
+            className="mt-6 sm:mt-8 mb-4"
           >
-            <div className="bg-white/[0.03] rounded-xl border border-white/10 p-5">
+            <div className="bg-white/[0.03] rounded-xl border border-white/10 p-4 sm:p-5">
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-                  <div className="w-3 h-3 rounded-full bg-emerald-500/60" />
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500/60" />
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500/60" />
+                  <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500/60" />
                 </div>
-                <span className="text-xs text-gray-500 font-mono">terminal — how it works</span>
+                <span className="text-[10px] sm:text-xs text-gray-500 font-mono">terminal — how it works</span>
               </div>
-              <div className="space-y-2 text-sm font-mono">
+              <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm font-mono">
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">$</span>
                   <span className="text-gray-300">1. Browse the roadmap and find a topic you want to learn</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">$</span>
-                  <span className="text-gray-300">2. Click the <span className="text-amber-400">&quot;Send Command&quot;</span> button on any topic</span>
+                  <span className="text-gray-300">2. Click <span className="text-cyan-400">View Lesson</span> to read in-browser or <span className="text-amber-400">Send to Chat</span></span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">$</span>
-                  <span className="text-gray-300">3. Paste the command in this chat window</span>
+                  <span className="text-gray-300">3. Get a full deep-dive: theory, math, code, real datasets, exercises</span>
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-emerald-400 shrink-0">$</span>
-                  <span className="text-gray-300">4. Get a full deep-dive: theory, math, code, real datasets, exercises</span>
-                </div>
-                <div className="flex items-start gap-2">
+                <div className="hidden sm:flex items-start gap-2">
                   <span className="text-amber-400 shrink-0">→</span>
-                  <span className="text-gray-400">Example command: <code className="bg-white/10 px-1.5 py-0.5 rounded text-emerald-300">/learn python-programming.numpy</code></span>
+                  <span className="text-gray-400">Example: <code className="bg-white/10 px-1.5 py-0.5 rounded text-emerald-300 text-[11px] sm:text-xs">/learn python-programming.numpy</code></span>
                 </div>
               </div>
             </div>
@@ -554,12 +608,12 @@ function ModuleCard({
       {/* Module Header */}
       <button
         onClick={onToggle}
-        className={`w-full p-4 sm:p-5 text-left flex items-center gap-3 sm:gap-4 ${viewMode === "list" ? "flex-row" : ""}`}
+        className={`w-full p-3 sm:p-4 lg:p-5 text-left flex items-center gap-2.5 sm:gap-3 lg:gap-4`}
       >
         {/* Module Number & Icon */}
-        <div className={`relative shrink-0 w-11 h-11 rounded-lg flex items-center justify-center border transition-all ${mod.bgAccent} ${isExpanded ? "border-white/20" : "border-white/10"}`}>
-          <Icon className={`w-5 h-5 ${mod.color}`} />
-          <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+        <div className={`relative shrink-0 w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-lg flex items-center justify-center border transition-all ${mod.bgAccent} ${isExpanded ? "border-white/20" : "border-white/10"}`}>
+          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${mod.color}`} />
+          <span className={`absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-4 h-4 sm:w-5 sm:h-5 rounded-full text-[9px] sm:text-[10px] font-bold flex items-center justify-center ${
             modProgress === 100
               ? "bg-emerald-500 text-white"
               : "bg-white/10 text-gray-400 border border-white/20"
@@ -570,19 +624,19 @@ function ModuleCard({
 
         {/* Title & Description */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h2 className={`font-bold text-sm sm:text-base transition-colors ${isExpanded ? "text-white" : "text-gray-200"}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <h2 className={`font-bold text-xs sm:text-sm lg:text-base transition-colors ${isExpanded ? "text-white" : "text-gray-200"}`}>
               {mod.title}
             </h2>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${depthColors[mod.topics[0]?.depth || "beginner"]} opacity-60`}>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full border ${depthColors[mod.topics[0]?.depth || "beginner"]} opacity-60`}>
               {mod.topics.length} topics
             </span>
           </div>
-          <p className={`text-xs mt-0.5 truncate transition-colors ${isExpanded ? "text-gray-400" : "text-gray-600"}`}>
+          <p className={`text-[10px] sm:text-xs mt-0.5 truncate transition-colors ${isExpanded ? "text-gray-400" : "text-gray-600"}`}>
             {mod.description}
           </p>
           {modProgress > 0 && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-1.5 sm:mt-2">
               <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-emerald-500 rounded-full"
@@ -591,7 +645,7 @@ function ModuleCard({
                   transition={{ duration: 0.8, delay: 0.2 }}
                 />
               </div>
-              <span className="text-[10px] text-emerald-400 font-mono tabular-nums">{modProgress}%</span>
+              <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono tabular-nums">{modProgress}%</span>
             </div>
           )}
         </div>
@@ -602,7 +656,7 @@ function ModuleCard({
           transition={{ duration: 0.3 }}
           className="shrink-0 text-gray-500"
         >
-          <ChevronDown className="w-5 h-5" />
+          <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
         </motion.div>
       </button>
 
@@ -616,9 +670,9 @@ function ModuleCard({
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-              <Separator className="bg-white/10 mb-4" />
-              <div className="space-y-2">
+            <div className="px-3 sm:px-4 lg:px-5 pb-3 sm:pb-4 lg:pb-5">
+              <Separator className="bg-white/10 mb-3 sm:mb-4" />
+              <div className="space-y-1.5 sm:space-y-2">
                 {mod.topics.map((topic, topicIdx) => (
                   <TopicItem
                     key={topic.id}
@@ -678,7 +732,8 @@ function TopicItem({
           : "bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/10"
       }`}
     >
-      <div className="flex items-center gap-3 p-3">
+      {/* Main row: checkbox, title, actions */}
+      <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3">
         {/* Checkbox */}
         <button
           onClick={onToggleComplete}
@@ -696,11 +751,11 @@ function TopicItem({
           onClick={() => setShowDesc(!showDesc)}
           className="flex-1 text-left min-w-0"
         >
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-sm font-medium transition-colors ${isCompleted ? "text-emerald-300" : "text-gray-200"}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <span className={`text-xs sm:text-sm font-medium transition-colors leading-snug ${isCompleted ? "text-emerald-300" : "text-gray-200"}`}>
               {topic.title}
             </span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border ${depthColors[topic.depth]}`}>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full border shrink-0 ${depthColors[topic.depth]}`}>
               {depthLabels[topic.depth]}
             </span>
           </div>
@@ -711,7 +766,7 @@ function TopicItem({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="text-xs text-gray-500 mt-1 leading-relaxed overflow-hidden"
+                className="text-[10px] sm:text-xs text-gray-500 mt-1 leading-relaxed overflow-hidden"
               >
                 {topic.description}
               </motion.p>
@@ -719,50 +774,51 @@ function TopicItem({
           </AnimatePresence>
         </button>
 
-        {/* Send Command Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={onOpenViewer}
-              className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-all border bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-500/30"
-            >
-              <BookOpen className="w-3 h-3" />
-              <span className="hidden sm:inline">View Lesson</span>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
-            Read full lesson in browser
-          </TooltipContent>
-        </Tooltip>
+        {/* Action Buttons — stacked on mobile, inline on desktop */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onOpenViewer}
+                className="shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-[10px] sm:text-xs font-mono transition-all border bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-500/30 active:scale-95"
+              >
+                <BookOpen className="w-3 h-3" />
+                <span className="hidden sm:inline">View Lesson</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
+              Read full lesson in browser
+            </TooltipContent>
+          </Tooltip>
 
-        {/* Send Command Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={onCopy}
-              className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-all border ${
-                isCopied
-                  ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-                  : "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-500/30"
-              }`}
-            >
-              {isCopied ? (
-                <>
-                  <Check className="w-3 h-3" />
-                  <span className="hidden sm:inline">Sent!</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-3 h-3" />
-                  <span className="hidden sm:inline">Send to Chat</span>
-                </>
-              )}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
-            Sends &quot;{cmd}&quot; to chat
-          </TooltipContent>
-        </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onCopy}
+                className={`shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-md text-[10px] sm:text-xs font-mono transition-all border active:scale-95 ${
+                  isCopied
+                    ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
+                    : "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-500/30"
+                }`}
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-3 h-3" />
+                    <span className="hidden sm:inline">Sent!</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3 h-3" />
+                    <span className="hidden sm:inline">Send to Chat</span>
+                  </>
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
+              Sends &quot;{cmd}&quot; to chat
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       {/* Command Preview Bar */}
@@ -771,12 +827,12 @@ function TopicItem({
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className="px-3 pb-3"
+          className="px-2.5 sm:px-3 pb-2.5 sm:pb-3"
         >
-          <div className="bg-black/30 rounded-md px-3 py-2 flex items-center gap-2 border border-white/5">
-            <span className="text-emerald-500 text-xs">$</span>
-            <code className="text-xs text-gray-300 font-mono flex-1 truncate">{cmd}</code>
-            <span className="text-[10px] text-gray-600">← paste in chat</span>
+          <div className="bg-black/30 rounded-md px-2.5 sm:px-3 py-1.5 sm:py-2 flex items-center gap-2 border border-white/5">
+            <span className="text-emerald-500 text-[10px] sm:text-xs">$</span>
+            <code className="text-[10px] sm:text-xs text-gray-300 font-mono flex-1 truncate">{cmd}</code>
+            <span className="text-[9px] sm:text-[10px] text-gray-600 hidden xs:inline">← paste in chat</span>
           </div>
         </motion.div>
       )}

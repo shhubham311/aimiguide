@@ -124,52 +124,99 @@
 /* Markdown lesson styles */
 .prose-custom {
   color: #d1d5db;
-  font-size: 0.9rem;
-  line-height: 1.75;
+  font-size: 0.82rem;
+  line-height: 1.7;
   max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 640px) {
+  .prose-custom {
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
 }
 
 .prose-custom h1 {
   color: #f9fafb;
-  font-size: 1.75rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   font-family: var(--font-sans);
 }
 
-.prose-custom h2 {
-  color: #f3f4f6;
-  font-size: 1.35rem;
-  font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-  font-family: var(--font-sans);
+@media (min-width: 640px) {
+  .prose-custom h1 {
+    font-size: 1.75rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+  }
 }
 
-.prose-custom h3 {
-  color: #e5e7eb;
+.prose-custom h2 {
+  color: #f3f4f6;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   font-family: var(--font-sans);
 }
 
+@media (min-width: 640px) {
+  .prose-custom h2 {
+    font-size: 1.35rem;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+.prose-custom h3 {
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-sans);
+}
+
+@media (min-width: 640px) {
+  .prose-custom h3 {
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
 .prose-custom p {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: #d1d5db;
 }
 
+@media (min-width: 640px) {
+  .prose-custom p {
+    margin-bottom: 1rem;
+  }
+}
+
 .prose-custom ul, .prose-custom ol {
-  margin-bottom: 1rem;
-  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .prose-custom ul, .prose-custom ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
 }
 
 .prose-custom li {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 
 .prose-custom ul li::marker {
@@ -198,21 +245,41 @@
 .prose-custom code {
   color: #fbbf24;
   background: rgba(255,255,255,0.06);
-  padding: 0.15rem 0.4rem;
-  border-radius: 0.25rem;
-  font-size: 0.825rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.2rem;
+  font-size: 0.75rem;
   font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+@media (min-width: 640px) {
+  .prose-custom code {
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.825rem;
+  }
 }
 
 .prose-custom pre {
   background: #0a0a12;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 0.5rem;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.25rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
   overflow-x: auto;
-  font-size: 0.8rem;
-  line-height: 1.6;
+  font-size: 0.72rem;
+  line-height: 1.55;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .prose-custom pre {
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
 }
 
 .prose-custom pre code {
@@ -220,6 +287,7 @@
   background: transparent;
   padding: 0;
   font-family: var(--font-mono);
+  word-break: normal;
 }
 
 .prose-custom pre .hljs-keyword { color: #c084fc; }
@@ -233,32 +301,64 @@
 
 .prose-custom blockquote {
   border-left: 3px solid #34d399;
-  padding-left: 1rem;
-  margin: 1rem 0;
+  padding-left: 0.75rem;
+  margin: 0.75rem 0;
   color: #9ca3af;
   font-style: italic;
 }
 
+@media (min-width: 640px) {
+  .prose-custom blockquote {
+    padding-left: 1rem;
+    margin: 1rem 0;
+  }
+}
+
+/* Responsive table wrapper */
 .prose-custom table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 1.25rem;
-  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  font-size: 0.72rem;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+  .prose-custom table {
+    display: table;
+    margin-bottom: 1.25rem;
+    font-size: 0.82rem;
+  }
 }
 
 .prose-custom th {
   background: rgba(255,255,255,0.05);
   color: #f9fafb;
   font-weight: 600;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.5rem;
   border: 1px solid rgba(255,255,255,0.08);
   text-align: left;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .prose-custom th {
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 .prose-custom td {
-  padding: 0.4rem 0.75rem;
+  padding: 0.3rem 0.5rem;
   border: 1px solid rgba(255,255,255,0.06);
   color: #d1d5db;
+}
+
+@media (min-width: 640px) {
+  .prose-custom td {
+    padding: 0.4rem 0.75rem;
+  }
 }
 
 .prose-custom tr:hover td {
@@ -267,25 +367,62 @@
 
 .prose-custom hr {
   border-color: rgba(255,255,255,0.1);
-  margin: 1.5rem 0;
+  margin: 1rem 0;
+}
+
+@media (min-width: 640px) {
+  .prose-custom hr {
+    margin: 1.5rem 0;
+  }
 }
 
 .prose-custom details {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .prose-custom details {
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 .prose-custom details summary {
   color: #34d399;
   cursor: pointer;
   font-weight: 500;
-  font-size: 0.85rem;
-  padding: 0.25rem 0;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+}
+
+@media (min-width: 640px) {
+  .prose-custom details summary {
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+  }
 }
 
 .prose-custom details[open] summary {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Hide scrollbar for mobile nav/filter areas */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch-friendly tap target for mobile */
+@media (max-width: 639px) {
+  .prose-custom * {
+    -webkit-tap-highlight-color: transparent;
+  }
 }
