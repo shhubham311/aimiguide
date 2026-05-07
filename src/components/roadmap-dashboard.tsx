@@ -145,17 +145,73 @@ export default function RoadmapDashboard() {
     );
     const fullMessage = `${cmd}\n\n${teachingPrompt}`;
 
-    // Send to parent chat window
+    // Strategy 1: Try to directly set the parent's chat input value via DOM
+    let inputFilled = false;
     try {
-      window.parent.postMessage(
-        { type: "chat-send", text: fullMessage },
-        "*"
-      );
+      const parentDoc = window.parent.document;
+      // Try common chat input selectors
+      const selectors = [
+        'textarea[placeholder]',
+        'textarea',
+        'div[contenteditable="true"]',
+        'input[type="text"]',
+        '[role="textbox"]',
+        'textarea[class*="chat"]',
+        'textarea[class*="message"]',
+        'textarea[class*="input"]',
+        'div[class*="editor"]',
+        'div[class*="chat-input"]',
+        'div[class*="message-input"]',
+        'div[class*="compose"]',
+      ];
+      for (const sel of selectors) {
+        const el = parentDoc.querySelector(sel) as HTMLTextAreaElement | HTMLInputElement | HTMLElement | null;
+        if (el) {
+          if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") {
+            // React-compatible value setter for native elements
+            const nativeSetter = Object.getOwnPropertyDescriptor(
+              el.tagName === "TEXTAREA"
+                ? window.HTMLTextAreaElement.prototype
+                : window.HTMLInputElement.prototype,
+              "value"
+            )?.set;
+            if (nativeSetter) {
+              nativeSetter.call(el, fullMessage);
+            } else {
+              (el as HTMLTextAreaElement).value = fullMessage;
+            }
+            el.dispatchEvent(new Event("input", { bubbles: true }));
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+          } else {
+            // contenteditable div
+            el.textContent = fullMessage;
+            el.dispatchEvent(new InputEvent("input", { bubbles: true, data: fullMessage, inputType: "insertText" }));
+          }
+          // Focus the input
+          el.focus();
+          inputFilled = true;
+          break;
+        }
+      }
     } catch {
-      // Silently fail if blocked
+      // Cross-origin — can't access parent DOM
     }
 
-    // Also copy to clipboard as fallback
+    // Strategy 2: postMessage to parent (in case the platform listens)
+    if (!inputFilled) {
+      try {
+        window.parent.postMessage({ type: "chat-send", text: fullMessage }, "*");
+      } catch {
+        // blocked
+      }
+      try {
+        window.parent.postMessage({ type: "message", text: fullMessage }, "*");
+      } catch {
+        // blocked
+      }
+    }
+
+    // Strategy 3: Always copy to clipboard as final fallback
     try {
       navigator.clipboard.writeText(fullMessage).catch(() => {
         const textArea = document.createElement("textarea");
@@ -170,7 +226,7 @@ export default function RoadmapDashboard() {
     }
 
     setCopiedId(`${moduleId}.${topicId}`);
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 3000);
   }, []);
 
   // Filter modules based on search and depth filter
