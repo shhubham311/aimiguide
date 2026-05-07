@@ -6,7 +6,7 @@ import {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
   Wrench, Cloud, ThumbsUp, MessageSquareCode, GitBranch,
   Search, ChevronDown, ChevronRight, Copy, Check, Terminal,
-  BookOpen, Zap, Trophy, Filter, X, GraduationCap, ArrowRight,
+  BookOpen, Zap, Trophy, Filter, X, GraduationCap, ArrowRight, Send,
   LayoutGrid, List, Command as CmdIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,9 +71,10 @@ export default function RoadmapDashboard() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [depthFilter, setDepthFilter] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => { setIsClient(true); }, []);
+  const [isClientRef] = useState(() => {
+    if (typeof window !== "undefined") return true;
+    return false;
+  });
 
   // Persist progress to localStorage
   const persistProgress = useCallback(() => {
@@ -84,8 +85,8 @@ export default function RoadmapDashboard() {
   }, [completedTopics, expandedModules]);
 
   useEffect(() => {
-    if (isClient) persistProgress();
-  }, [isClient, persistProgress]);
+    if (isClientRef) persistProgress();
+  }, [isClientRef, persistProgress]);
 
   const totalTopics = courseModules.reduce((sum, m) => sum + m.topics.length, 0);
   const totalProgress = totalTopics > 0 ? Math.round((completedTopics.size / totalTopics) * 100) : 0;
@@ -116,20 +117,34 @@ export default function RoadmapDashboard() {
     });
   }, []);
 
-  const copyCommand = useCallback(async (moduleId: string, topicId: string, topicTitle: string) => {
+  const sendCommand = useCallback((moduleId: string, topicId: string, topicTitle: string) => {
     const cmd = generateCommand(moduleId, topicId);
     const fullCommand = `${cmd} — ${topicTitle}`;
+
+    // Try to send message to parent chat window (IM embedding)
     try {
-      await navigator.clipboard.writeText(fullCommand);
+      window.parent.postMessage(
+        { type: "chat-send", text: fullCommand },
+        "*"
+      );
     } catch {
-      // fallback
-      const textArea = document.createElement("textarea");
-      textArea.value = fullCommand;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
+      // Silently fail if parent postMessage is blocked
     }
+
+    // Also copy to clipboard as fallback
+    try {
+      navigator.clipboard.writeText(fullCommand).catch(() => {
+        const textArea = document.createElement("textarea");
+        textArea.value = fullCommand;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      });
+    } catch {
+      // clipboard not available
+    }
+
     setCopiedId(`${moduleId}.${topicId}`);
     setTimeout(() => setCopiedId(null), 2000);
   }, []);
@@ -325,7 +340,7 @@ export default function RoadmapDashboard() {
                 viewMode={viewMode}
                 onToggle={() => toggleModule(mod.id)}
                 onComplete={(topicKey) => toggleComplete(topicKey)}
-                onCopy={(modId, topicId, title) => copyCommand(modId, topicId, title)}
+                onCopy={(modId, topicId, title) => sendCommand(modId, topicId, title)}
               />
             ))}
           </div>
@@ -594,7 +609,7 @@ function TopicItem({
           </AnimatePresence>
         </button>
 
-        {/* Copy Command Button */}
+        {/* Send Command Button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
@@ -602,25 +617,24 @@ function TopicItem({
               className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-all border ${
                 isCopied
                   ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-                  : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-white hover:border-white/20"
+                  : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 hover:border-emerald-500/30"
               }`}
             >
               {isCopied ? (
                 <>
                   <Check className="w-3 h-3" />
-                  <span className="hidden sm:inline">Copied!</span>
+                  <span className="hidden sm:inline">Sent!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3 h-3" />
-                  <span className="hidden sm:inline">Send Command</span>
-                  <CmdIcon className="w-3 h-3 opacity-50" />
+                  <Send className="w-3 h-3" />
+                  <span className="hidden sm:inline">Send to Chat</span>
                 </>
               )}
             </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="bg-gray-900 border-gray-700 text-xs font-mono max-w-xs">
-            Copies: {cmd}
+            Sends &quot;{cmd}&quot; to chat
           </TooltipContent>
         </Tooltip>
       </div>
