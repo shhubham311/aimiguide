@@ -208,7 +208,7 @@ export const mlProjects: MLProject[] = [
   { id: "intrusion-detection", title: "Intrusion Detection System", url: "https://www.geeksforgeeks.org/machine-learning/intrusion-detection-system-using-machine-learning-algorithms/", difficulty: "advanced", category: "detection-security", tags: ["security", "classification"] },
   { id: "human-activity", title: "Human Activity Recognition (Deep Learning)", url: "https://www.geeksforgeeks.org/deep-learning/human-activity-recognition-using-deep-learning-model/", difficulty: "advanced", category: "detection-security", tags: ["deep-learning", "sensors"] },
   { id: "autocorrector-nlp", title: "Autocorrector using NLP", url: "https://www.geeksforgeeks.org/nlp/autocorrector-feature-using-nlp-in-python/", difficulty: "intermediate", category: "detection-security", tags: ["nlp", "text-processing"] },
-  { id: "drowsiness-detection", title: "Driver Drowsiness Detection", url: "https://www.geeksforgeeks.org/python/driver-drowsiness-detection-using-opencv/", difficulty: "intermediate", category: "detection-security", tags: ["opencv", "detection", "real-time"] },
+  { id: "drowsiness-detection", title: "Driver Drowsiness Detection", url: "https://www.geeksforgeeks.org/python/python-opencv-drowsiness-detection", difficulty: "intermediate", category: "detection-security", tags: ["opencv", "detection", "real-time"] },
 ];
 
 export function getProjectsByCategory(categoryId: string): MLProject[] {
