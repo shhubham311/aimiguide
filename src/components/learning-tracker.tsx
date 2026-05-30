@@ -3,11 +3,11 @@
 import { useState, useMemo, useCallback, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ExternalLink, Check, Search, X, Trophy, Rocket,
-  TrendingUp, MessageSquare, Eye, Heart, ThumbsUp,
-  BrainCircuit, Cpu, Shield, LayoutGrid, List, Filter,
-  ChevronDown, ChevronRight, Zap, Target, Star,
-  Flame, BookOpen, Send, ArrowUpRight
+  ExternalLink, Check, Search, X, Trophy, GraduationCap,
+  Code2, Sigma, Database, BarChart3, BrainCircuit, Settings2,
+  Cpu, MessageSquare, Eye, Sparkles, Wand2, Container,
+  Server, Binary, ChevronDown, Zap, Target, Star,
+  Flame, LayoutGrid, List, ArrowUpRight, BookOpen, ShieldCheck
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -15,16 +15,18 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  mlProjects,
-  projectCategories,
-  searchProjects,
-  getProjectsByCategory,
-  type MLProject,
-  type ProjectCategory,
-} from "@/lib/projects-data";
+  subjectCategories,
+  learningSubjects,
+  getSubjectsByCategorySimple,
+  searchSubjects,
+  type LearningSubject,
+  type SubjectCategory,
+} from "@/lib/subjects-data";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  TrendingUp, MessageSquare, Eye, Heart, ThumbsUp, BrainCircuit, Cpu, Shield,
+  Code2, Sigma, Database, BarChart3, BrainCircuit, Settings2,
+  Cpu, MessageSquare, Eye, Sparkles, Wand2, Container,
+  Server, Binary,
 };
 
 const depthColors = {
@@ -39,87 +41,98 @@ const depthLabels = {
   advanced: "Advanced",
 };
 
-interface ProjectProgress {
-  completedProjects: string[];
+const roleColors: Record<string, string> = {
+  "Data Scientist": "bg-blue-500/15 text-blue-300 border-blue-500/25",
+  "ML Engineer": "bg-emerald-500/15 text-emerald-300 border-emerald-500/25",
+  "AI Engineer": "bg-violet-500/15 text-violet-300 border-violet-500/25",
+  "GenAI Engineer": "bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/25",
+};
+
+interface SubjectProgress {
+  completedSubjects: string[];
   expandedCategories: string[];
+  roleFilter: string;
 }
 
-const emptyProjectProgress: ProjectProgress = { completedProjects: [], expandedCategories: [] };
+const emptySubjectProgress: SubjectProgress = {
+  completedSubjects: [],
+  expandedCategories: [],
+  roleFilter: "all",
+};
 
-let pCachedRaw: string | null = null;
-let pCachedProgress: ProjectProgress = emptyProjectProgress;
+let sCachedRaw: string | null = null;
+let sCachedProgress: SubjectProgress = emptySubjectProgress;
 
-function subscribeProjectStorage(callback: () => void) {
+function subscribeSubjectStorage(callback: () => void) {
   window.addEventListener("storage", callback);
   return () => window.removeEventListener("storage", callback);
 }
 
-function getStoredProjectProgress(): ProjectProgress {
+function getStoredSubjectProgress(): SubjectProgress {
   try {
-    const raw = localStorage.getItem("ml-projects-progress");
-    if (raw === pCachedRaw) return pCachedProgress;
-    pCachedRaw = raw;
-    pCachedProgress = raw ? JSON.parse(raw) : emptyProjectProgress;
-    return pCachedProgress;
+    const raw = localStorage.getItem("ml-subjects-progress");
+    if (raw === sCachedRaw) return sCachedProgress;
+    sCachedRaw = raw;
+    sCachedProgress = raw ? JSON.parse(raw) : emptySubjectProgress;
+    return sCachedProgress;
   } catch {
-    pCachedRaw = null;
-    pCachedProgress = emptyProjectProgress;
-    return emptyProjectProgress;
+    sCachedRaw = null;
+    sCachedProgress = emptySubjectProgress;
+    return emptySubjectProgress;
   }
 }
 
-function getServerProjectProgress(): ProjectProgress {
-  return emptyProjectProgress;
+function getServerSubjectProgress(): SubjectProgress {
+  return emptySubjectProgress;
 }
 
-function getStreakCount(completed: Set<string>): number {
-  // Simple streak: count total completed
-  return completed.size;
+function getLevel(completedCount: number, total: number): { level: number; title: string; nextAt: number; color: string } {
+  const pct = total > 0 ? (completedCount / total) * 100 : 0;
+  if (pct >= 90) return { level: 5, title: "AI Master", nextAt: total, color: "text-purple-400" };
+  if (pct >= 70) return { level: 4, title: "AI Expert", nextAt: total, color: "text-amber-400" };
+  if (pct >= 50) return { level: 3, title: "AI Practitioner", nextAt: Math.round(total * 0.7), color: "text-cyan-400" };
+  if (pct >= 25) return { level: 2, title: "AI Builder", nextAt: Math.round(total * 0.5), color: "text-emerald-400" };
+  if (pct >= 5) return { level: 1, title: "AI Explorer", nextAt: Math.round(total * 0.25), color: "text-blue-400" };
+  return { level: 0, title: "AI Beginner", nextAt: Math.round(total * 0.05) || 5, color: "text-gray-400" };
 }
 
-function getLevel(completedCount: number): { level: number; title: string; nextAt: number; color: string } {
-  if (completedCount >= 80) return { level: 5, title: "ML Master", nextAt: 93, color: "text-purple-400" };
-  if (completedCount >= 60) return { level: 4, title: "ML Expert", nextAt: 80, color: "text-amber-400" };
-  if (completedCount >= 40) return { level: 3, title: "ML Practitioner", nextAt: 60, color: "text-cyan-400" };
-  if (completedCount >= 20) return { level: 2, title: "ML Builder", nextAt: 40, color: "text-emerald-400" };
-  if (completedCount >= 5) return { level: 1, title: "ML Explorer", nextAt: 20, color: "text-blue-400" };
-  return { level: 0, title: "ML Beginner", nextAt: 5, color: "text-gray-400" };
-}
+const allRoles = ["all", "Data Scientist", "ML Engineer", "AI Engineer", "GenAI Engineer"];
 
-export default function ProjectTracker() {
+export default function LearningTracker() {
   const [searchQuery, setSearchQuery] = useState("");
   const [depthFilter, setDepthFilter] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
 
   const storedProgress = useSyncExternalStore(
-    subscribeProjectStorage,
-    getStoredProjectProgress,
-    getServerProjectProgress
+    subscribeSubjectStorage,
+    getStoredSubjectProgress,
+    getServerSubjectProgress
   );
 
-  const completedProjects = useMemo(
-    () => new Set(storedProgress.completedProjects),
-    [storedProgress.completedProjects]
+  const completedSubjects = useMemo(
+    () => new Set(storedProgress.completedSubjects),
+    [storedProgress.completedSubjects]
   );
   const expandedCategories = useMemo(
     () => new Set(storedProgress.expandedCategories),
     [storedProgress.expandedCategories]
   );
 
-  const writeProgress = useCallback((data: ProjectProgress) => {
+  const writeProgress = useCallback((data: SubjectProgress) => {
     try {
-      localStorage.setItem("ml-projects-progress", JSON.stringify(data));
+      localStorage.setItem("ml-subjects-progress", JSON.stringify(data));
       window.dispatchEvent(new StorageEvent("storage"));
     } catch {}
   }, []);
 
-  const toggleProjectComplete = useCallback((projectId: string) => {
-    const current = storedProgress.completedProjects;
-    const next = current.includes(projectId)
-      ? current.filter((id) => id !== projectId)
-      : [...current, projectId];
-    writeProgress({ ...storedProgress, completedProjects: next });
+  const toggleSubjectComplete = useCallback((subjectId: string) => {
+    const current = storedProgress.completedSubjects;
+    const next = current.includes(subjectId)
+      ? current.filter((id) => id !== subjectId)
+      : [...current, subjectId];
+    writeProgress({ ...storedProgress, completedSubjects: next });
   }, [storedProgress, writeProgress]);
 
   const toggleCategory = useCallback((categoryId: string) => {
@@ -130,34 +143,36 @@ export default function ProjectTracker() {
     writeProgress({ ...storedProgress, expandedCategories: next });
   }, [storedProgress, writeProgress]);
 
-  const totalProjects = mlProjects.length;
-  const completedCount = completedProjects.size;
-  const totalProgress = totalProjects > 0 ? Math.round((completedCount / totalProjects) * 100) : 0;
-  const levelInfo = getLevel(completedCount);
-  const levelProgress = Math.min(
-    100,
-    Math.round(((completedCount % (levelInfo.nextAt > 0 ? 20 : 93)) / (levelInfo.level === 0 ? 5 : 20)) * 100)
-  );
+  const toggleRoleFilter = useCallback((role: string) => {
+    setRoleFilter(role);
+    writeProgress({ ...storedProgress, roleFilter: role });
+  }, [storedProgress, writeProgress]);
 
-  // Filter projects
+  const totalSubjects = learningSubjects.length;
+  const completedCount = completedSubjects.size;
+  const totalProgress = totalSubjects > 0 ? Math.round((completedCount / totalSubjects) * 100) : 0;
+  const levelInfo = getLevel(completedCount, totalSubjects);
+
+  // Filter categories and subjects
   const filteredCategories = useMemo(() => {
-    return projectCategories
+    return subjectCategories
       .map((cat) => {
-        const catProjects = getProjectsByCategory(cat.id);
-        const filtered = catProjects.filter((p) => {
+        const catSubjects = getSubjectsByCategorySimple(cat.id);
+        const filtered = catSubjects.filter((s) => {
           const matchesSearch =
             cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.tags.some((t) => t.includes(searchQuery.toLowerCase()));
-          const matchesDepth = depthFilter === "all" || p.difficulty === depthFilter;
+            s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.tags.some((t) => t.includes(searchQuery.toLowerCase()));
+          const matchesDepth = depthFilter === "all" || s.difficulty === depthFilter;
           const matchesCategory = categoryFilter === "all" || cat.id === categoryFilter;
-          return matchesSearch && matchesDepth && matchesCategory;
+          const matchesRole = roleFilter === "all" || cat.roleRelevance.includes(roleFilter);
+          return matchesSearch && matchesDepth && matchesCategory && matchesRole;
         });
-        const catCompleted = filtered.filter((p) => completedProjects.has(p.id)).length;
-        return { ...cat, filteredProjects: filtered, catCompleted };
+        const catCompleted = filtered.filter((s) => completedSubjects.has(s.id)).length;
+        return { ...cat, filteredSubjects: filtered, catCompleted };
       })
-      .filter((c) => c.filteredProjects.length > 0);
-  }, [searchQuery, depthFilter, categoryFilter, completedProjects]);
+      .filter((c) => c.filteredSubjects.length > 0);
+  }, [searchQuery, depthFilter, categoryFilter, roleFilter, completedSubjects]);
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -171,8 +186,8 @@ export default function ProjectTracker() {
               backgroundSize: "60px 60px",
             }}
           />
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-cyan-500/5 rounded-full blur-[120px]" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-fuchsia-500/5 rounded-full blur-[120px]" />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6">
@@ -185,15 +200,17 @@ export default function ProjectTracker() {
             <div className="flex items-center justify-between gap-3 mb-3 sm:mb-5">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <div className="relative shrink-0">
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center border border-violet-500/30">
-                    <Rocket className="w-4 h-4 sm:w-5 sm:h-5 text-violet-400" />
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-500/20 to-fuchsia-500/20 flex items-center justify-center border border-emerald-500/30">
+                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                   </div>
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-base sm:text-xl lg:text-2xl font-bold tracking-tight text-white truncate">
-                    ML <span className="text-violet-400">Projects</span> Tracker
+                    Learning <span className="text-emerald-400">Tracker</span>
                   </h1>
-                  <p className="text-[10px] sm:text-xs text-gray-500 truncate">{mlProjects.length} real-world projects from GeeksforGeeks — track your progress</p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 truncate">
+                    {totalSubjects} subjects for Data Scientist / ML / AI / GenAI Engineer roles
+                  </p>
                 </div>
               </div>
             </div>
@@ -208,7 +225,7 @@ export default function ProjectTracker() {
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg sm:text-2xl font-bold text-white">{completedCount}</span>
-                  <span className="text-xs sm:text-sm text-gray-500">/ {totalProjects}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">/ {totalSubjects}</span>
                 </div>
                 <Progress value={totalProgress} className="h-1 bg-white/10 mt-2" />
                 <span className="text-[10px] sm:text-xs text-emerald-400 font-mono">{totalProgress}%</span>
@@ -217,7 +234,7 @@ export default function ProjectTracker() {
               {/* Level */}
               <div className="bg-white/[0.04] rounded-xl p-3 sm:p-4 border border-white/10">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
-                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-400" />
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
                   <span className="text-[10px] sm:text-xs text-gray-500">Level</span>
                 </div>
                 <div className={`text-lg sm:text-2xl font-bold ${levelInfo.color}`}>
@@ -226,38 +243,63 @@ export default function ProjectTracker() {
                 <span className="text-[10px] sm:text-xs text-gray-400">{levelInfo.title}</span>
                 <div className="flex items-center gap-1 mt-1">
                   <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                  <span className="text-[9px] sm:text-[10px] text-gray-500">Next: {levelInfo.nextAt} projects</span>
+                  <span className="text-[9px] sm:text-[10px] text-gray-500">Next: {levelInfo.nextAt} subjects</span>
                 </div>
               </div>
 
               {/* Category Progress */}
               <div className="bg-white/[0.04] rounded-xl p-3 sm:p-4 border border-white/10">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
-                  <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
-                  <span className="text-[10px] sm:text-xs text-gray-500">Categories</span>
+                  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400" />
+                  <span className="text-[10px] sm:text-xs text-gray-500">Domains</span>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg sm:text-2xl font-bold text-white">
-                    {projectCategories.filter((c) => {
-                      const catProjects = getProjectsByCategory(c.id);
-                      return catProjects.every((p) => completedProjects.has(p.id));
+                    {subjectCategories.filter((c) => {
+                      const catSubjects = getSubjectsByCategorySimple(c.id);
+                      return catSubjects.length > 0 && catSubjects.every((s) => completedSubjects.has(s.id));
                     }).length}
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-500">/ {projectCategories.length}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">/ {subjectCategories.length}</span>
                 </div>
-                <span className="text-[10px] sm:text-xs text-gray-400">100% done</span>
+                <span className="text-[10px] sm:text-xs text-gray-400">mastered</span>
               </div>
 
-              {/* Streak / Fire */}
+              {/* Streak */}
               <div className="bg-white/[0.04] rounded-xl p-3 sm:p-4 border border-white/10">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
                   <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-400" />
-                  <span className="text-[10px] sm:text-xs text-gray-500">Streak</span>
+                  <span className="text-[10px] sm:text-xs text-gray-500">Topics</span>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg sm:text-2xl font-bold text-white">{completedCount}</span>
                 </div>
-                <span className="text-[10px] sm:text-xs text-gray-400">projects built</span>
+                <span className="text-[10px] sm:text-xs text-gray-400">topics completed</span>
+              </div>
+            </div>
+
+            {/* Role Filter */}
+            <div className="mb-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Target className="w-3 h-3 text-gray-500" />
+                <span className="text-[10px] text-gray-500">Filter by Role:</span>
+              </div>
+              <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10 overflow-x-auto scrollbar-none gap-1">
+                {allRoles.map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => toggleRoleFilter(role)}
+                    className={`px-2.5 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
+                      roleFilter === role
+                        ? role === "all"
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                          : roleColors[role] || "bg-white/10 text-gray-300 border border-white/20"
+                        : "text-gray-500 hover:text-gray-300 border border-transparent"
+                    }`}
+                  >
+                    {role === "all" ? "All Roles" : role}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -266,10 +308,10 @@ export default function ProjectTracker() {
               <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <Input
-                  placeholder="Search projects, tags..."
+                  placeholder="Search subjects, tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 sm:pl-10 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-600 focus:border-violet-500/50 focus:ring-violet-500/20 h-9 sm:h-10 rounded-lg font-mono text-xs sm:text-sm"
+                  className="pl-9 sm:pl-10 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-600 focus:border-emerald-500/50 focus:ring-emerald-500/20 h-9 sm:h-10 rounded-lg font-mono text-xs sm:text-sm"
                 />
                 {searchQuery && (
                   <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
@@ -278,29 +320,6 @@ export default function ProjectTracker() {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {/* Category filter dropdown - desktop */}
-                <div className="hidden md:flex bg-white/5 rounded-lg p-0.5 border border-white/10 overflow-x-auto scrollbar-none max-w-[200px]">
-                  <button
-                    onClick={() => setCategoryFilter("all")}
-                    className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition-all whitespace-nowrap ${
-                      categoryFilter === "all" ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-gray-500 hover:text-gray-300"
-                    }`}
-                  >
-                    All
-                  </button>
-                  {projectCategories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setCategoryFilter(cat.id)}
-                      className={`px-2 py-1.5 rounded-md text-[10px] font-medium transition-all whitespace-nowrap ${
-                        categoryFilter === cat.id ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-gray-500 hover:text-gray-300"
-                      }`}
-                    >
-                      {cat.name.split(" ")[0]}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Depth filter */}
                 <div className="hidden sm:flex bg-white/5 rounded-lg p-0.5 border border-white/10">
                   {(["all", "beginner", "intermediate", "advanced"] as const).map((d) => (
@@ -308,7 +327,7 @@ export default function ProjectTracker() {
                       key={d}
                       onClick={() => setDepthFilter(d)}
                       className={`px-2.5 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap ${
-                        depthFilter === d ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-gray-500 hover:text-gray-300"
+                        depthFilter === d ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-gray-500 hover:text-gray-300"
                       }`}
                     >
                       {d === "all" ? "All" : depthLabels[d]}
@@ -331,15 +350,15 @@ export default function ProjectTracker() {
             {/* Mobile filters */}
             <div className="sm:hidden mt-2">
               <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10 overflow-x-auto scrollbar-none gap-1">
-                {(["all", ...projectCategories.map((c) => c.id)] as string[]).map((cId) => (
+                {(["all", ...subjectCategories.map((c) => c.id)] as string[]).slice(0, 8).map((cId) => (
                   <button
                     key={cId}
                     onClick={() => setCategoryFilter(cId)}
                     className={`px-2 py-1.5 rounded-md text-[10px] font-medium transition-all whitespace-nowrap shrink-0 ${
-                      categoryFilter === cId ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
+                      categoryFilter === cId ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
                     }`}
                   >
-                    {cId === "all" ? "All" : projectCategories.find((c) => c.id === cId)?.name.split(" ")[0] || cId}
+                    {cId === "all" ? "All" : subjectCategories.find((c) => c.id === cId)?.name.split(" ")[0] || cId}
                   </button>
                 ))}
               </div>
@@ -349,7 +368,7 @@ export default function ProjectTracker() {
                     key={d}
                     onClick={() => setDepthFilter(d)}
                     className={`px-2.5 py-1.5 rounded-md text-[10px] font-medium transition-all whitespace-nowrap shrink-0 ${
-                      depthFilter === d ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
+                      depthFilter === d ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
                     }`}
                   >
                     {d === "all" ? "All Levels" : depthLabels[d]}
@@ -359,18 +378,18 @@ export default function ProjectTracker() {
             </div>
           </motion.header>
 
-          {/* Category + Projects */}
+          {/* Category + Subjects */}
           <div className="space-y-3 sm:space-y-4">
             {filteredCategories.map((cat, idx) => (
-              <CategorySection
+              <SubjectCategorySection
                 key={cat.id}
                 category={cat}
                 expandedCategories={expandedCategories}
-                completedProjects={completedProjects}
+                completedSubjects={completedSubjects}
                 index={idx}
                 viewMode={viewMode}
                 onToggle={() => toggleCategory(cat.id)}
-                onToggleProject={toggleProjectComplete}
+                onToggleSubject={toggleSubjectComplete}
               />
             ))}
           </div>
@@ -378,8 +397,8 @@ export default function ProjectTracker() {
           {filteredCategories.length === 0 && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-16 sm:py-20 text-gray-600">
               <Search className="w-10 h-10 sm:w-12 sm:h-12 mb-3 opacity-30" />
-              <p className="text-base sm:text-lg">No projects found</p>
-              <p className="text-xs sm:text-sm mt-1">Try a different search or filter</p>
+              <p className="text-base sm:text-lg">No subjects found</p>
+              <p className="text-xs sm:text-sm mt-1">Try a different search, filter, or role</p>
             </motion.div>
           )}
 
@@ -391,16 +410,16 @@ export default function ProjectTracker() {
             className="mt-8 mb-4 text-center"
           >
             <p className="text-[10px] sm:text-xs text-gray-600">
-              Projects sourced from{" "}
+              Subjects sourced from{" "}
               <a
-                href="https://www.geeksforgeeks.org/machine-learning/machine-learning-projects/"
+                href="https://www.geeksforgeeks.org/machine-learning/machine-learning-tutorial/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-violet-400 hover:text-violet-300 underline underline-offset-2"
+                className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2"
               >
-                GeeksforGeeks ML Projects
+                GeeksforGeeks
               </a>{" "}
-              — Click any project to open the tutorial
+              — Click any subject to open the tutorial
             </p>
           </motion.div>
         </div>
@@ -409,39 +428,39 @@ export default function ProjectTracker() {
   );
 }
 
-// ── Category Section ──
+// ── Subject Category Section ──
 
-interface CategorySectionProps {
-  category: ProjectCategory & { filteredProjects: MLProject[]; catCompleted: number };
+interface SubjectCategorySectionProps {
+  category: SubjectCategory & { filteredSubjects: LearningSubject[]; catCompleted: number };
   expandedCategories: Set<string>;
-  completedProjects: Set<string>;
+  completedSubjects: Set<string>;
   index: number;
   viewMode: "grid" | "list";
   onToggle: () => void;
-  onToggleProject: (id: string) => void;
+  onToggleSubject: (id: string) => void;
 }
 
-function CategorySection({
+function SubjectCategorySection({
   category: cat,
   expandedCategories,
-  completedProjects,
+  completedSubjects,
   index,
   viewMode,
   onToggle,
-  onToggleProject,
-}: CategorySectionProps) {
+  onToggleSubject,
+}: SubjectCategorySectionProps) {
   const isExpanded = expandedCategories.has(cat.id);
   const Icon = iconMap[cat.icon] || BrainCircuit;
-  const catProgress = cat.filteredProjects.length > 0
-    ? Math.round((cat.catCompleted / cat.filteredProjects.length) * 100)
+  const catProgress = cat.filteredSubjects.length > 0
+    ? Math.round((cat.catCompleted / cat.filteredSubjects.length) * 100)
     : 0;
-  const isDone = cat.catCompleted === cat.filteredProjects.length && cat.filteredProjects.length > 0;
+  const isDone = cat.catCompleted === cat.filteredSubjects.length && cat.filteredSubjects.length > 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
+      transition={{ duration: 0.4, delay: index * 0.04 }}
       className={`rounded-xl border transition-all duration-300 ${
         isExpanded
           ? "bg-white/[0.06] border-white/15 shadow-lg " + cat.glowColor
@@ -463,8 +482,18 @@ function CategorySection({
               {cat.name}
             </h2>
             <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full border bg-white/5 border-white/10 text-gray-400">
-              {cat.filteredProjects.length} projects
+              {cat.filteredSubjects.length} topics
             </span>
+            {/* Role badges (shown when expanded) */}
+            {isExpanded && (
+              <div className="flex gap-1">
+                {cat.roleRelevance.map((role) => (
+                  <span key={role} className={`text-[8px] sm:text-[9px] px-1.5 py-0.5 rounded-full border ${roleColors[role] || "bg-white/5 border-white/10 text-gray-400"}`}>
+                    {role}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <p className={`text-[10px] sm:text-xs mt-0.5 truncate ${isExpanded ? "text-gray-400" : "text-gray-600"}`}>
             {cat.description}
@@ -500,14 +529,14 @@ function CategorySection({
             <div className="px-3 sm:px-4 lg:px-5 pb-3 sm:pb-4 lg:pb-5">
               <Separator className="bg-white/10 mb-3 sm:mb-4" />
               <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3" : "space-y-1.5 sm:space-y-2"}>
-                {cat.filteredProjects.map((project, pIdx) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    isCompleted={completedProjects.has(project.id)}
-                    index={pIdx}
+                {cat.filteredSubjects.map((subject, sIdx) => (
+                  <SubjectCard
+                    key={subject.id}
+                    subject={subject}
+                    isCompleted={completedSubjects.has(subject.id)}
+                    index={sIdx}
                     viewMode={viewMode}
-                    onToggle={() => onToggleProject(project.id)}
+                    onToggle={() => onToggleSubject(subject.id)}
                   />
                 ))}
               </div>
@@ -519,22 +548,22 @@ function CategorySection({
   );
 }
 
-// ── Project Card ──
+// ── Subject Card ──
 
-interface ProjectCardProps {
-  project: MLProject;
+interface SubjectCardProps {
+  subject: LearningSubject;
   isCompleted: boolean;
   index: number;
   viewMode: "grid" | "list";
   onToggle: () => void;
 }
 
-function ProjectCard({ project, isCompleted, index, viewMode, onToggle }: ProjectCardProps) {
+function SubjectCard({ subject, isCompleted, index, viewMode, onToggle }: SubjectCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.15, delay: index * 0.02 }}
+      transition={{ duration: 0.15, delay: index * 0.015 }}
       className={`group rounded-lg border transition-all duration-200 ${
         isCompleted
           ? "bg-emerald-500/[0.06] border-emerald-500/20"
@@ -554,9 +583,9 @@ function ProjectCard({ project, isCompleted, index, viewMode, onToggle }: Projec
           {isCompleted && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
         </button>
 
-        {/* Project Info */}
+        {/* Subject Info */}
         <a
-          href={project.url}
+          href={subject.url}
           target="_blank"
           rel="noopener noreferrer"
           className={`flex-1 text-left min-w-0 transition-colors ${
@@ -565,21 +594,21 @@ function ProjectCard({ project, isCompleted, index, viewMode, onToggle }: Projec
         >
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <span className={`text-xs sm:text-sm font-medium leading-snug ${isCompleted ? "text-emerald-300 line-through decoration-emerald-500/40" : "text-gray-200"}`}>
-              {project.title}
+              {subject.title}
             </span>
             <ArrowUpRight className="w-3 h-3 text-gray-600 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full border shrink-0 ${depthColors[project.difficulty]}`}>
-              {depthLabels[project.difficulty]}
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full border shrink-0 ${depthColors[subject.difficulty]}`}>
+              {depthLabels[subject.difficulty]}
             </span>
-            {project.tags.slice(0, viewMode === "grid" ? 2 : 3).map((tag) => (
+            {subject.tags.slice(0, viewMode === "grid" ? 2 : 3).map((tag) => (
               <span key={tag} className="text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-500 shrink-0">
                 {tag}
               </span>
             ))}
-            {project.tags.length > 3 && viewMode === "list" && (
-              <span className="text-[9px] text-gray-600">+{project.tags.length - 3}</span>
+            {subject.tags.length > 3 && viewMode === "list" && (
+              <span className="text-[9px] text-gray-600">+{subject.tags.length - 3}</span>
             )}
           </div>
         </a>

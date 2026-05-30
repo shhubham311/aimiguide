@@ -193,6 +193,12 @@ export const mlProjects: MLProject[] = [
   { id: "ipl-score-dl", title: "IPL Score Prediction (Deep Learning)", url: "https://www.geeksforgeeks.org/deep-learning/ipl-score-prediction-using-deep-learning/", difficulty: "advanced", category: "deep-learning", tags: ["deep-learning", "sports"] },
   { id: "sequential-model", title: "Sequential Model (Abalone Dataset)", url: "https://www.geeksforgeeks.org/deep-learning/how-can-tensorflow-be-used-with-abalone-dataset-to-build-a-sequential-model/", difficulty: "intermediate", category: "deep-learning", tags: ["tensorflow", "sequential"] },
   { id: "face-landmarks", title: "Face and Hand Landmarks Detection", url: "https://www.geeksforgeeks.org/machine-learning/face-and-hand-landmarks-detection-using-python-mediapipe-opencv/", difficulty: "advanced", category: "deep-learning", tags: ["mediapipe", "opencv"] },
+  { id: "boston-housing", title: "Boston Housing Kaggle (Linear Regression)", url: "https://www.geeksforgeeks.org/machine-learning/ml-boston-housing-kaggle-challenge-with-linear-regression/", difficulty: "beginner", category: "deep-learning", tags: ["regression", "kaggle"] },
+  { id: "resnet-deep-learning", title: "Residual Networks (ResNet)", url: "https://www.geeksforgeeks.org/deep-learning/residual-networks-resnet-deep-learning/", difficulty: "advanced", category: "deep-learning", tags: ["cnn", "resnet"] },
+  { id: "emotion-recommender", title: "Book Recommendation based on Emotion", url: "https://www.geeksforgeeks.org/python/emotion-based-book-recommendation-system/", difficulty: "intermediate", category: "deep-learning", tags: ["nlp", "emotion", "recommendation"] },
+  { id: "gender-age-detection", title: "Gender & Age Detection (OpenCV)", url: "https://www.geeksforgeeks.org/python/gender-and-age-detection-using-opencv/", difficulty: "intermediate", category: "deep-learning", tags: ["opencv", "detection"] },
+  { id: "color-detection", title: "Color Detection (OpenCV)", url: "https://www.geeksforgeeks.org/python/color-detection-using-opencv-python/", difficulty: "beginner", category: "deep-learning", tags: ["opencv", "image-processing"] },
+  { id: "object-count", title: "Count Number of Objects (OpenCV)", url: "https://www.geeksforgeeks.org/computer-vision/count-number-of-object-using-python-opencv/", difficulty: "beginner", category: "deep-learning", tags: ["opencv", "detection"] },
 
   // ── Detection & Security ──
   { id: "facemask-detection", title: "FaceMask Detection (TensorFlow)", url: "https://www.geeksforgeeks.org/deep-learning/facemask-detection-using-tensorflow-in-python/", difficulty: "intermediate", category: "detection-security", tags: ["cnn", "detection"] },
@@ -201,6 +207,8 @@ export const mlProjects: MLProject[] = [
   { id: "license-plate-video", title: "Car License Plate Detection (Real-time Video)", url: "https://www.geeksforgeeks.org/python/detect-and-recognize-car-license-plate-from-a-video-in-real-time/", difficulty: "advanced", category: "detection-security", tags: ["opencv", "video", "real-time"] },
   { id: "intrusion-detection", title: "Intrusion Detection System", url: "https://www.geeksforgeeks.org/machine-learning/intrusion-detection-system-using-machine-learning-algorithms/", difficulty: "advanced", category: "detection-security", tags: ["security", "classification"] },
   { id: "human-activity", title: "Human Activity Recognition (Deep Learning)", url: "https://www.geeksforgeeks.org/deep-learning/human-activity-recognition-using-deep-learning-model/", difficulty: "advanced", category: "detection-security", tags: ["deep-learning", "sensors"] },
+  { id: "autocorrector-nlp", title: "Autocorrector using NLP", url: "https://www.geeksforgeeks.org/nlp/autocorrector-feature-using-nlp-in-python/", difficulty: "intermediate", category: "detection-security", tags: ["nlp", "text-processing"] },
+  { id: "drowsiness-detection", title: "Driver Drowsiness Detection", url: "https://www.geeksforgeeks.org/python/driver-drowsiness-detection-using-opencv/", difficulty: "intermediate", category: "detection-security", tags: ["opencv", "detection", "real-time"] },
 ];
 
 export function getProjectsByCategory(categoryId: string): MLProject[] {

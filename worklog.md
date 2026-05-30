@@ -71,3 +71,26 @@ Stage Summary:
 - Full progress tracking with localStorage persistence
 - Gamified level system (ML Beginner → ML Master)
 - Integrated into dashboard via tabbed navigation
+
+---
+Task ID: 1
+Agent: main
+Task: Add ML projects from GFG + Build Learning Tracker for ML/DL/GenAI
+
+Work Log:
+- Fetched GeeksforGeeks ML projects page and extracted all project links
+- Added 8 missing projects to reach 101 total (from 93): boston-housing, resnet, emotion-recommender, gender-age-detection, color-detection, object-count, autocorrector-nlp, drowsiness-detection
+- Created src/lib/subjects-data.ts with 139 learning subjects across 14 categories
+- Categories: Python Fundamentals, Mathematics, Data Wrangling, Data Visualization, ML Algorithms, ML Workflow, Deep Learning, NLP, Computer Vision, Transformers, Generative AI, MLOps, Data Engineering, DSA
+- All subjects link to GeeksforGeeks tutorials
+- Each category tagged with relevant roles: Data Scientist, ML Engineer, AI Engineer, GenAI Engineer
+- Built src/components/learning-tracker.tsx with role filter, search, depth filter, category filter, expandable sections, progress tracking via localStorage
+- Updated src/app/page.tsx with third tab "Subject Tracker"
+- Updated project tracker to show dynamic count
+- Build passed with 0 errors, 0 warnings
+
+Stage Summary:
+- 101 ML projects with GFG redirect links
+- 139 learning subjects across 14 domains with GFG redirect links
+- Role-based filtering for 4 career paths
+- All progress saved to localStorage
