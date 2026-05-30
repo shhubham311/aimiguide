@@ -33,3 +33,41 @@ Stage Summary:
 - Dashboard fully responsive across mobile (320px+), tablet (768px+), and desktop (1024px+)
 - All 3 main files updated: roadmap-dashboard.tsx, lesson-viewer.tsx, globals.css
 - Clean build confirmed with no errors or warnings
+---
+Task ID: 2
+Agent: Main Agent
+Task: Add 93 ML projects from GeeksforGeeks as a project tracker with redirect links
+
+Work Log:
+- Scraped https://www.geeksforgeeks.org/machine-learning/machine-learning-projects/ using z-ai web-reader CLI
+- Extracted and deduplicated 93 actual ML project links from the page HTML
+- Created src/lib/projects-data.ts with 93 projects organized into 8 categories:
+  - Price & Stock Prediction (13 projects)
+  - NLP & Sentiment Analysis (16 projects)
+  - Image & Computer Vision (18 projects)
+  - Health & Medical (17 projects)
+  - Recommendation Systems (4 projects)
+  - Classification & Prediction (16 projects)
+  - Deep Learning Projects (3 projects)
+  - Detection & Security (6 projects)
+- Built src/components/project-tracker.tsx with:
+  - Full progress tracking via localStorage (useSyncExternalStore for hydration safety)
+  - Stats dashboard: completed count, level system (Lv.0-Lv.5), category progress, streak counter
+  - Search by project name, tags, or category
+  - Filter by difficulty (beginner/intermediate/advanced) and category
+  - Grid/List view toggle
+  - Expandable category sections with per-category progress bars
+  - Checkbox to mark projects as complete, with line-through on completed titles
+  - External link (ArrowUpRight icon) to open GeeksforGeeks tutorial in new tab
+  - Responsive design for mobile, tablet, and desktop
+- Updated src/app/page.tsx with tabbed interface:
+  - Sticky top tab bar with "Learning Roadmap" and "Project Tracker" tabs
+  - Emerald theme for roadmap, violet theme for project tracker
+  - Badge showing "93" projects count on desktop
+- Build compiles cleanly with zero errors or warnings
+
+Stage Summary:
+- 93 ML projects with working redirect links to GeeksforGeeks
+- Full progress tracking with localStorage persistence
+- Gamified level system (ML Beginner → ML Master)
+- Integrated into dashboard via tabbed navigation
