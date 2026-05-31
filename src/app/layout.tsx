@@ -26,7 +26,12 @@ export const metadata: Metadata = {
   keywords: ["AI", "ML", "Deep Learning", "Roadmap", "Interactive Learning", "Python", "Machine Learning"],
   authors: [{ name: "Z.ai" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: [
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
     title: "AI/ML Learning Terminal",
