@@ -111,3 +111,22 @@ Stage Summary:
 - Custom AI/ML neural network brain favicon replacing default Z logo
 - SVG + multi-size PNG versions for cross-browser compatibility
 - Layout.tsx updated with proper icon metadata array
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Fix z-space deployment failure
+
+Work Log:
+- Clean build passed with 0 errors, all routes compile correctly
+- Fixed .env DATABASE_URL: changed from hardcoded absolute path to relative path (file:./db/custom.db)
+- Fixed start script: changed from `bun` to `node` for broader deployment compatibility
+- Added `deploy` script to package.json
+- Verified all content files (71 markdown lessons) are present in standalone build
+- Verified public assets (favicon SVG + PNGs) are in standalone build
+- Final clean build confirmed: 76MB standalone output, all routes static/dynamic correct
+
+Stage Summary:
+- DATABASE_URL fixed to use relative path for deployment portability
+- Start script switched from bun to node for z-space compatibility
+- Build verified clean and deployable
