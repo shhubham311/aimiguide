@@ -1,335 +1,186 @@
-# AI/ML Learning Guide
+# Personal Recordbook
 
-A comprehensive, interactive learning platform for mastering AI, Machine Learning, and related technologies. Built with modern web technologies to provide an engaging learning experience with structured roadmaps, project tracking, and interactive lessons.
+Personal Recordbook is a single-user study and learning dashboard built from the AI/ML Guide, StudyTrack, and Reset Tracker. It keeps AI/ML roadmap progress, project progress, learning links, study sessions, goals, notes, subjects, calendar events, and daily discipline records in one app.
 
-## 🎯 Features
+The app is designed for one user: `@shubh`, using the app user id `studytrack_single_user`.
 
-- **Interactive Learning Paths**: Structured curriculum covering foundational to advanced AI/ML concepts
-- **Lesson Viewer**: Beautiful markdown-based lesson rendering with syntax highlighting
-- **Learning Tracker**: Monitor your progress through different topics and courses
-- **Project Tracker**: Track hands-on projects and learning milestones
-- **Roadmap Dashboard**: Visual representation of your learning journey
-- **Dark Mode Support**: Comfortable reading experience in any lighting condition
-- **Responsive Design**: Seamless experience across desktop, tablet, and mobile devices
-- **Code Highlighting**: Syntax highlighting for code snippets throughout lessons
+## Features
 
-## 📚 Curriculum Coverage
+- **Learning Roadmap**: AI/ML curriculum tracker with topic completion, module expansion, search, filters, and lesson viewer.
+- **Project Tracker**: 101 machine learning projects with completion tracking, categories, difficulty filters, search, and project links.
+- **Subject Tracker**: role-based learning links for Data Scientist, ML Engineer, AI Engineer, and GenAI Engineer paths.
+- **StudyTrack**: full study tracker with goals, sessions, Pomodoro/focus tools, notes, subjects, calendar, statistics, settings, and Supabase/local fallback storage.
+- **Reset Tracker**: daily discipline tracker with scores, bad-day minimum, study blocks, timers, countdowns, job applications, SSC/GATE/coding logs, dashboard, weekly review, and history.
+- **Single-user Supabase storage**: no signup or signin flow required.
+- **Responsive layout**: tested at mobile and tablet viewport sizes.
+- **Fast StudyTrack tab**: StudyTrack preloads in the background so switching to it is immediate.
 
-The platform covers comprehensive topics including:
+## Data Storage
 
-### **Mathematics & Statistics**
-- Probability Basics & Permutation-Combination
-- Descriptive & Inferential Statistics
-- Hypothesis Testing
-- Linear Algebra (Matrices, Determinants, Eigenvalues, Decompositions)
-- Calculus (Limits, Continuity, Optimization, Taylor Series)
-- Vector Spaces & Correlation-Covariance
+The app uses Supabase as the long-term database and localStorage as a fast/offline cache.
 
-### **Python & DSA**
-- Python Basics & OOPS
-- Data Structures & Algorithms
-- Common DSA Problems
-- File I/O Operations
-- SQL & Python Integration
+| Area | Storage |
+| --- | --- |
+| StudyTrack profile/stats | `profiles` |
+| StudyTrack goals | `goals` |
+| StudyTrack sessions | `sessions` |
+| StudyTrack notes | `notes` |
+| StudyTrack calendar events | `events` |
+| StudyTrack subjects | `subjects` |
+| StudyTrack activity | `activity` |
+| Reset Tracker | `app_state`, key `reset_tracker_next` |
+| AI Roadmap progress | `app_state`, key `roadmap_progress` |
+| ML Projects progress | `app_state`, key `ml_projects_progress` |
+| Learning/Subject links progress | `app_state`, key `ml_subjects_progress` |
 
-### **Data Science & Analysis**
-- NumPy Fundamentals
-- Pandas & EDA
-- Data Visualization
-- ETL & AWS Deployment
+All records are scoped to:
 
-### **Machine Learning**
-- ML Introduction & Core Concepts
-- Linear & Logistic Regression
-- Decision Trees & Ensemble Methods
-- KNN, Naive Bayes, SVM
-- Clustering & PCA
-- Time Series Analysis
-- Evaluation Metrics & Model Testing
-- Learning to Rank
-
-### **Deep Learning**
-- MLPs & Gradient Descent
-- CNNs (Convolutional Neural Networks)
-- RNNs, GRU, LSTM
-- Transformers & BERT
-- GANs (Generative Adversarial Networks)
-- Diffusion Models
-
-### **NLP & Advanced Topics**
-- NLP Basics
-- Advanced NLP & Embeddings
-- Multimodal Embeddings
-- Vision-Language Models
-- LLMs & Fine-tuning
-- Retrieval & Candidate Generation
-- Search, Retrieval & Recommendation Systems
-
-### **Deployment & Tools**
-- FastAPI Development
-- Database Fundamentals
-- Deployment Types
-- AWS Deployment
-- Git & GitHub
-- Interview Patterns & Important Concepts
-
-## 🛠 Tech Stack
-
-- **Frontend Framework**: [Next.js 16](https://nextjs.org/) with TypeScript
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/) with animations
-- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) with Radix UI
-- **Markdown Rendering**: React Markdown with syntax highlighting
-- **Code Highlighting**: [highlight.js](https://highlightjs.org/) & react-syntax-highlighter
-- **Animation**: [Framer Motion](https://www.framer.com/motion/)
-- **Theme Support**: [next-themes](https://github.com/pacocoursey/next-themes)
-- **Notifications**: [Sonner](https://sonner.emilkowal.ski/) toast notifications
-- **Validation**: [Zod](https://zod.dev/) schema validation
-- **Command Palette**: [cmdk](https://cmdk.paco.sh/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Web SDK**: z-ai-web-dev-sdk for enhanced functionality
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ or npm/yarn
-- Git
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/aimlguide.git
-cd aimlguide
+```text
+user_id = studytrack_single_user
+username = shubh
 ```
 
-2. **Install dependencies**
+## Supabase Setup
+
+Run the current single-user SQL migration in Supabase SQL Editor before relying on database persistence. The database should contain:
+
+- `profiles`
+- `goals`
+- `sessions`
+- `notes`
+- `events`
+- `subjects`
+- `activity`
+- `app_state`
+
+The community table is intentionally removed:
+
+```sql
+DROP TABLE IF EXISTS community_messages CASCADE;
+```
+
+The app currently has the Supabase URL and anon key inside the frontend code, so Vercel does not require extra environment variables for the current setup. The anon key is public by design in Supabase frontend apps; RLS policies restrict access to the single app user.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with TypeScript
+- **Styling**: Tailwind CSS 4
+- **UI**: shadcn/ui and Radix UI
+- **Icons**: Lucide React
+- **Animation**: Framer Motion
+- **Lessons**: Markdown content rendered in the lesson viewer
+- **Database**: Supabase REST API
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm
+- Supabase project with the single-user schema applied
+
+### Install
+
 ```bash
 npm install
 ```
 
-3. **Run development server**
+### Run Locally
+
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+Open:
 
-### Available Scripts
-
-```bash
-npm run dev      # Start development server on port 3000
-npm run build    # Build for production
-npm start        # Start production server
-npm run lint     # Run ESLint for code quality
+```text
+http://localhost:3000
 ```
 
-## 📁 Project Structure
+### Build
 
-```
-aimlguide/
-├── src/
-│   ├── app/                          # Next.js app directory
-│   │   ├── api/                      # API routes
-│   │   │   ├── route.ts             # Main API endpoint
-│   │   │   └── lesson/              # Lesson API endpoints
-│   │   ├── layout.tsx               # Root layout
-│   │   ├── page.tsx                 # Home page
-│   │   └── globals.css              # Global styles
-│   ├── components/                   # React components
-│   │   ├── learning-tracker.tsx     # Progress tracking component
-│   │   ├── lesson-viewer.tsx        # Lesson display component
-│   │   ├── project-tracker.tsx      # Project management component
-│   │   ├── roadmap-dashboard.tsx    # Learning roadmap visualization
-│   │   └── ui/                      # shadcn/ui components
-│   ├── content/                      # Markdown lesson content
-│   │   ├── *.md                     # Individual lesson files
-│   │   └── ...
-│   ├── hooks/                        # Custom React hooks
-│   │   ├── use-mobile.ts            # Mobile detection hook
-│   │   └── use-toast.ts             # Toast notification hook
-│   └── lib/                          # Utilities & helpers
-│       ├── course-data.ts           # Course structure data
-│       └── ...
-├── public/                           # Static assets
-├── examples/                         # Example code
-│   └── websocket/                   # WebSocket examples
-├── components.json                   # shadcn/ui config
-├── next.config.ts                   # Next.js configuration
-├── tailwind.config.ts               # Tailwind CSS configuration
-├── tsconfig.json                    # TypeScript configuration
-├── package.json                     # Dependencies & scripts
-├── eslint.config.mjs                # ESLint configuration
-├── postcss.config.mjs               # PostCSS configuration
-└── Caddyfile                        # Web server configuration
-```
-
-## 🔌 API Reference
-
-### GET /api
-Returns a welcome message for the API.
-
-**Response:**
-```json
-{
-  "message": "Hello, world!"
-}
-```
-
-### GET /api/lesson
-Fetches lesson content and metadata.
-
-**Query Parameters:**
-- `id` (string): Lesson identifier
-- `topic` (string): Topic/category of the lesson
-
-**Response:**
-```json
-{
-  "id": "string",
-  "title": "string",
-  "content": "string (markdown)",
-  "metadata": {
-    "difficulty": "string",
-    "duration": "number",
-    "prerequisites": "array"
-  }
-}
-```
-
-## 🎨 Customization
-
-### Theming
-The application supports light and dark modes. Theme preference is persisted to localStorage using `next-themes`.
-
-### Styling
-- Global styles: [src/app/globals.css](src/app/globals.css)
-- Tailwind config: [tailwind.config.ts](tailwind.config.ts)
-- Component themes: Component-level CSS modules
-
-### Content
-Add new lessons by creating `.md` files in the `src/content/` directory. The system automatically discovers and registers new content.
-
-## 🚢 Deployment
-
-### Deploy to Vercel
-
-1. **Push to GitHub**
-```bash
-git add .
-git commit -m "Ready for Vercel deployment"
-git push origin main
-```
-
-2. **Connect to Vercel**
-   - Visit [vercel.com](https://vercel.com)
-   - Click "Add New Project"
-   - Select your GitHub repository
-   - Click "Import"
-
-3. **Configure Settings** (auto-detected for Next.js)
-   - Framework: Next.js
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-
-4. **Deploy**
-   - Click "Deploy"
-   - Your app will be live in minutes!
-
-### Environment Variables
-If needed, add environment variables in Vercel dashboard:
-- Settings → Environment Variables
-- Add your variables and redeploy
-
-### Manual Deployment
 ```bash
 npm run build
+```
+
+### Start Production Build
+
+```bash
 npm start
 ```
 
-## 📊 Performance Optimizations
+## Deployment
 
-- **Code Splitting**: Automatic code splitting via Next.js
-- **Image Optimization**: Optimized image loading and rendering
-- **Package Imports**: Optimized imports for `lucide-react`, `recharts`, `framer-motion`
-- **Markdown Rendering**: Efficient markdown parsing and syntax highlighting
-- **CSS**: Tailwind CSS with tree-shaking for minimal bundle size
+Deploying to Vercel works with the standard Next.js settings:
 
-## 🔧 Configuration Files
+- Framework: Next.js
+- Build command: `npm run build`
+- Output: `.next`
 
-### `next.config.ts`
-- TypeScript build error ignoring for development flexibility
-- React Strict Mode disabled for smoother development
-- Package import optimization
+No Vercel environment variables are currently required because the Supabase URL and anon key are already present in the app code.
 
-### `tsconfig.json`
-- Strict TypeScript settings
-- Path aliases for clean imports
+## Project Structure
 
-### `tailwind.config.ts`
-- Custom design tokens
-- Animation presets
-- Extended theme configurations
+```text
+aimlguide/
+├── public/
+│   └── studytrack/                 # Embedded full StudyTrack static app
+├── src/
+│   ├── app/
+│   │   ├── api/                    # Lesson/API routes
+│   │   ├── globals.css             # Global styles and tracker utility classes
+│   │   ├── layout.tsx              # Metadata and root layout
+│   │   └── page.tsx                # Main Personal Recordbook tab shell
+│   ├── components/
+│   │   ├── learning-tracker.tsx    # Learning/subject link tracker
+│   │   ├── lesson-viewer.tsx       # Markdown lesson viewer
+│   │   ├── project-tracker.tsx     # ML project tracker
+│   │   ├── reset-tracker-app.tsx   # React Reset Tracker
+│   │   ├── roadmap-dashboard.tsx   # AI/ML roadmap
+│   │   ├── studytrack-app.tsx      # Preloaded StudyTrack iframe wrapper
+│   │   └── ui/                     # shadcn/ui components
+│   ├── content/                    # Markdown lessons
+│   ├── hooks/                      # React hooks
+│   └── lib/
+│       ├── course-data.ts          # Roadmap data
+│       ├── projects-data.ts        # ML project list
+│       ├── subjects-data.ts        # Learning link data
+│       └── supabase-state.ts       # Compact app_state persistence helper
+├── package.json
+├── next.config.ts
+└── tsconfig.json
+```
 
-### `eslint.config.mjs`
-- ESLint 9+ flat config
-- Code quality enforcement
-- Integration with Next.js
+## Main Tabs
 
-## 🤝 Contributing
+1. **Learning Roadmap**
+   Tracks completion across the structured AI/ML curriculum.
 
-Contributions are welcome! Here's how to get started:
+2. **Project Tracker**
+   Tracks project completion and filters project ideas by category/difficulty.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. **Subject Tracker**
+   Tracks role-specific learning resources and links.
 
-### Adding New Lessons
-1. Create a new `.md` file in `src/content/`
-2. Follow the markdown format used in existing lessons
-3. Update `src/lib/course-data.ts` with lesson metadata
-4. Submit a PR for review
+4. **StudyTrack**
+   Embeds the full original StudyTrack experience, minus duplicated AI roadmap/project/learning/reset menu entries.
 
-## 📝 License
+5. **Reset Tracker**
+   Tracks daily discipline, score, weekly review, job applications, coding, SSC/GATE work, and distraction control.
 
-This project is open source and available under the MIT License.
+## Persistence Behavior
 
-## 🆘 Support
+Refreshing the page does not delete data.
 
-- **Issues**: Report bugs or request features via GitHub Issues
-- **Discussions**: Ask questions in GitHub Discussions
-- **Documentation**: Check existing lesson content for learning resources
+The app writes progress to Supabase and also caches it in localStorage. If Supabase is temporarily unavailable, localStorage keeps the app usable. Once Supabase is available, new saves sync back to the database.
 
-## 🎓 Learning Approach
+## Notes For Future Changes
 
-This platform follows a structured, progressive learning approach:
-1. **Foundations**: Mathematical and programming fundamentals
-2. **Core Concepts**: ML theory and algorithms
-3. **Advanced Topics**: Deep learning, NLP, and specialized domains
-4. **Practical Application**: Real-world projects and deployment
+- Keep `studytrack_single_user` unchanged unless the app code is updated everywhere that depends on it.
+- For Supabase free tier, prefer storing compact tab progress in `app_state` instead of creating many tiny rows.
+- StudyTrack detailed entities should stay in their dedicated tables because they are dated records.
+- Do not re-add community tables or auth/signup UI unless the app becomes multi-user again.
 
-## 📈 Roadmap
+## License
 
-- [ ] Interactive code editor within lessons
-- [ ] Quiz and assessment system
-- [ ] Personalized learning recommendations
-- [ ] Community discussion forums
-- [ ] Certificate of completion
-- [ ] Video content integration
-- [ ] Offline mode support
-- [ ] Multi-language support
-
-## 💡 Tips for Best Learning Experience
-
-1. **Take Notes**: Use the learning tracker to mark important concepts
-2. **Practice Projects**: Work through projects in the project tracker
-3. **Review Regularly**: Revisit previous topics to reinforce learning
-4. **Dark Mode**: Use dark mode for comfortable late-night studying
-5. **Mobile Learning**: Access lessons on-the-go with mobile support
-
----
-
-**Happy Learning! 🚀**
-
-For the latest updates and information, visit the project repository or deployed site.
+Personal project. Add a license file if you plan to publish it as open source.

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ExternalLink, Check, Search, X, Trophy, Rocket,
@@ -22,6 +22,7 @@ import {
   type MLProject,
   type ProjectCategory,
 } from "@/lib/projects-data";
+import { loadRemoteState, saveRemoteState } from "@/lib/supabase-state";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   TrendingUp, MessageSquare, Eye, Heart, ThumbsUp, BrainCircuit, Cpu, Shield,
@@ -92,6 +93,23 @@ export default function ProjectTracker() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
 
+  useEffect(() => {
+    let cancelled = false;
+    loadRemoteState("ml_projects_progress", emptyProjectProgress).then((data) => {
+      if (cancelled) return;
+      try {
+        const raw = JSON.stringify(data);
+        localStorage.setItem("ml-projects-progress", raw);
+        pCachedRaw = raw;
+        pCachedProgress = data;
+        window.dispatchEvent(new StorageEvent("storage"));
+      } catch {}
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const storedProgress = useSyncExternalStore(
     subscribeProjectStorage,
     getStoredProjectProgress,
@@ -112,6 +130,7 @@ export default function ProjectTracker() {
       localStorage.setItem("ml-projects-progress", JSON.stringify(data));
       window.dispatchEvent(new StorageEvent("storage"));
     } catch {}
+    saveRemoteState("ml_projects_progress", data);
   }, []);
 
   const toggleProjectComplete = useCallback((projectId: string) => {

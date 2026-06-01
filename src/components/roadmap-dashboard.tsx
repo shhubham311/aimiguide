@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
@@ -18,6 +18,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { courseModules, generateCommand, generateTeachingPrompt, type Module, type Topic } from "@/lib/course-data";
 import LessonViewer from "@/components/lesson-viewer";
+import { loadRemoteState, saveRemoteState } from "@/lib/supabase-state";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; size?: number }>> = {
   Code2, Sigma, Grid3x3, BarChart3, BrainCircuit, Cpu, Sparkles,
@@ -90,6 +91,23 @@ export default function RoadmapDashboard() {
     setViewerOpen(false);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    loadRemoteState("roadmap_progress", emptyProgress).then((data) => {
+      if (cancelled) return;
+      try {
+        const raw = JSON.stringify(data);
+        localStorage.setItem("roadmap-progress", raw);
+        cachedRaw = raw;
+        cachedProgress = data;
+        window.dispatchEvent(new StorageEvent("storage"));
+      } catch {}
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Read from localStorage using useSyncExternalStore (no hydration mismatch)
   const storedProgress = useSyncExternalStore(
     subscribeToStorage,
@@ -115,6 +133,7 @@ export default function RoadmapDashboard() {
     } catch {
       // localStorage not available
     }
+    saveRemoteState("roadmap_progress", data);
   }, []);
 
   const totalTopics = courseModules.reduce((sum, m) => sum + m.topics.length, 0);

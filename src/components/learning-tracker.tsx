@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useSyncExternalStore } from "react";
+import { useState, useMemo, useCallback, useEffect, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ExternalLink, Check, Search, X, Trophy, GraduationCap,
@@ -22,6 +22,7 @@ import {
   type LearningSubject,
   type SubjectCategory,
 } from "@/lib/subjects-data";
+import { loadRemoteState, saveRemoteState } from "@/lib/supabase-state";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Code2, Sigma, Database, BarChart3, BrainCircuit, Settings2,
@@ -105,6 +106,23 @@ export default function LearningTracker() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [roleFilter, setRoleFilter] = useState<string>("all");
 
+  useEffect(() => {
+    let cancelled = false;
+    loadRemoteState("ml_subjects_progress", emptySubjectProgress).then((data) => {
+      if (cancelled) return;
+      try {
+        const raw = JSON.stringify(data);
+        localStorage.setItem("ml-subjects-progress", raw);
+        sCachedRaw = raw;
+        sCachedProgress = data;
+        window.dispatchEvent(new StorageEvent("storage"));
+      } catch {}
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const storedProgress = useSyncExternalStore(
     subscribeSubjectStorage,
     getStoredSubjectProgress,
@@ -125,6 +143,7 @@ export default function LearningTracker() {
       localStorage.setItem("ml-subjects-progress", JSON.stringify(data));
       window.dispatchEvent(new StorageEvent("storage"));
     } catch {}
+    saveRemoteState("ml_subjects_progress", data);
   }, []);
 
   const toggleSubjectComplete = useCallback((subjectId: string) => {

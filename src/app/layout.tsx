@@ -1,17 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -21,10 +10,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "AI/ML Learning Terminal — Interactive Roadmap",
-  description: "Interactive terminal-style dashboard for learning AI, ML, Deep Learning, and more. Select a topic, get a command, and start learning in the chat.",
-  keywords: ["AI", "ML", "Deep Learning", "Roadmap", "Interactive Learning", "Python", "Machine Learning"],
-  authors: [{ name: "Z.ai" }],
+  title: "Personal Recordbook",
+  description: "A single personal recordbook for AI/ML learning, projects, study tracking, and daily discipline records.",
+  keywords: ["Personal Recordbook", "Study Tracker", "AI", "ML", "Projects", "Learning", "Daily Tracker"],
+  authors: [{ name: "Personal Recordbook" }],
   icons: {
     icon: [
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
@@ -34,16 +23,16 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "AI/ML Learning Terminal",
-    description: "Interactive terminal-style dashboard for your AI/ML learning journey",
+    title: "Personal Recordbook",
+    description: "Your personal recordbook for learning, projects, study sessions, and daily discipline.",
     url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    siteName: "Personal Recordbook",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI/ML Learning Terminal",
-    description: "Interactive terminal-style dashboard for your AI/ML learning journey",
+    title: "Personal Recordbook",
+    description: "Your personal recordbook for learning, projects, study sessions, and daily discipline.",
   },
 };
 
@@ -54,9 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
-      >
+      <body className="antialiased bg-background text-foreground">
         {children}
         <Toaster />
       </body>
